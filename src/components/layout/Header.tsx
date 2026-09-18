@@ -33,9 +33,9 @@ export const Header: React.FC = () => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Radio', path: '/radio' },
     { name: 'TV', path: '/tv' },
-    { name: 'About RBA', path: '/about' },
+    { name: 'Radio', path: '/radio' },
+    { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
 
@@ -55,11 +55,11 @@ export const Header: React.FC = () => {
           </span>
           <span className="hidden sm:inline text-slate-400">|</span>
           <Link to="/tv" className="hover:text-white transition-colors flex items-center gap-1">
-            <Tv className="w-3 h-3 text-rba-blue" /> RTV Live & KC2
+            <Tv className="w-3 h-3 text-rba-blue" /> Live TV Channels
           </Link>
           <span className="hidden sm:inline text-slate-400">|</span>
           <Link to="/radio" className="hover:text-white transition-colors flex items-center gap-1">
-            <Radio className="w-3 h-3 text-rba-yellow" /> Radio Rwanda 100.7 FM
+            <Radio className="w-3 h-3 text-rba-yellow" /> Radio Broadcasts
           </Link>
         </div>
 
@@ -88,7 +88,7 @@ export const Header: React.FC = () => {
         <Link to="/" className="flex items-center gap-3 shrink-0 group">
           <img
             src={settings.logo_url || '/logo.png'}
-            alt={settings.site_name || 'Rwanda Broadcasting Agency (RBA)'}
+            alt={settings.site_name || 'Benix Space TV'}
             className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105"
             onError={(e) => {
               (e.target as HTMLImageElement).src = '/logo.png';

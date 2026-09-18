@@ -17,7 +17,7 @@ export const Footer: React.FC = () => {
             <Link to="/">
               <img
                 src={settings.logo_url || '/logo.png'}
-                alt={settings.site_name || 'Rwanda Broadcasting Agency'}
+                alt={settings.site_name || 'Benix Space TV'}
                 className="h-12 w-auto object-contain"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = '/logo.png';
@@ -25,7 +25,7 @@ export const Footer: React.FC = () => {
               />
             </Link>
             <p className="text-xs text-slate-400 leading-relaxed">
-              {settings.site_description || 'Rwanda Broadcasting Agency (RBA) is Rwanda’s public service multimedia broadcaster, providing quality news, education, and entertainment across television, radio, and digital streaming platforms nationwide and worldwide.'}
+              {settings.site_description || 'Benix Space TV is a premier digital television network, providing quality news, live sports, entertainment, and multimedia streaming worldwide.'}
             </p>
             <div className="pt-2 flex items-center gap-3 text-xs text-slate-400">
               <span className="flex items-center gap-1.5 font-bold text-rba-yellow">
@@ -89,7 +89,7 @@ export const Footer: React.FC = () => {
           <div className="space-y-3">
             <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Radio className="w-4 h-4 text-rba-yellow" />
-              RBA Radio Stations
+              Live Radio Stations
             </h4>
             <ul className="text-xs space-y-2 text-slate-400">
               <li>
@@ -159,7 +159,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <Link to="/about" className="hover:text-white transition-colors">
-                  About Rwanda Broadcasting Agency
+                  About Benix Space TV
                 </Link>
               </li>
               <li>
@@ -229,7 +229,7 @@ export const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-4 flex-wrap">
-            <p>{settings.footer_text || `© ${new Date().getFullYear()} ${settings.site_name || 'Rwanda Broadcasting Agency (RBA)'}. All rights reserved.`}</p>
+            <p>{settings.footer_text || `© ${new Date().getFullYear()} ${settings.site_name || 'Benix Space TV'}. All rights reserved.`}</p>
             {import.meta.env.DEV && (
               <button
                 onClick={triggerPopupNow}

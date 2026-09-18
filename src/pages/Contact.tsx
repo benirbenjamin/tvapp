@@ -21,8 +21,8 @@ export const ContactPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-rba-grayBg pb-20">
       <SEO
-        title={`Contact ${settings.site_name || 'Rwanda Broadcasting Agency'}`}
-        description={`Contact ${settings.site_name || 'RBA'} headquarters, TV newsroom, and radio studios.`}
+        title={`Contact ${settings.site_name || 'Benix Space TV'}`}
+        description={`Contact ${settings.site_name || 'Benix Space TV'} studios and broadcasting support.`}
       />
 
       {/* Header */}
@@ -30,7 +30,7 @@ export const ContactPage: React.FC = () => {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl sm:text-5xl font-black mb-3">Contact Us</h1>
           <p className="text-slate-300 text-sm sm:text-base">
-            Reach out to our newsrooms, radio stations, advertising team, or technical support.
+            Reach out to our television newsroom, radio studios, advertising team, or technical support.
           </p>
         </div>
       </div>
@@ -41,8 +41,8 @@ export const ContactPage: React.FC = () => {
           {/* Contact Details Card */}
           <div className="lg:col-span-5 bg-white rounded-3xl p-8 border border-slate-200 shadow-md space-y-6">
             <div>
-              <h2 className="text-xl font-black text-slate-900 mb-2">Headquarters</h2>
-              <p className="text-xs text-slate-500">{settings.site_name || 'Rwanda Broadcasting Agency'} Central Studios</p>
+              <h2 className="text-xl font-black text-slate-900 mb-2">Broadcasting Center</h2>
+              <p className="text-xs text-slate-500">{settings.site_name || 'Benix Space TV'} Central Studios</p>
             </div>
 
             <div className="space-y-4 text-xs sm:text-sm text-slate-600">

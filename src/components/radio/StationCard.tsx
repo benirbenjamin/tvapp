@@ -96,7 +96,7 @@ export const StationCard: React.FC<StationCardProps> = ({ station }) => {
           )}
 
           <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-            {station.description || 'Live streaming official Rwanda Broadcasting Agency radio program.'}
+            {station.description || 'Live streaming official Benix Space TV radio broadcast.'}
           </p>
         </div>
 

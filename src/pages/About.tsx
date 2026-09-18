@@ -5,24 +5,26 @@ import { useSettings } from '../context/SettingsContext';
 
 export const AboutPage: React.FC = () => {
   const { settings } = useSettings();
+  const siteName = settings.site_name || 'Benix Space TV';
+
   return (
     <div className="min-h-screen bg-rba-grayBg pb-20">
       <SEO
-        title={`About ${settings.site_name || 'Rwanda Broadcasting Agency (RBA)'}`}
-        description={settings.site_description || "Learn about the history, mandate, and nationwide broadcast reach of Rwanda Broadcasting Agency (RBA), RTV, and Radio Rwanda."}
+        title={`About ${siteName}`}
+        description="Learn about Benix Space TV, delivering high-definition live television, entertainment, sports, and multimedia streaming worldwide."
       />
 
       {/* Hero Header */}
       <div className="bg-rba-navy text-white py-16 px-4 sm:px-6 text-center">
         <div className="max-w-3xl mx-auto">
           <span className="inline-block px-3 py-1 rounded-full bg-rba-yellow/20 text-rba-yellow text-xs font-bold uppercase tracking-wider mb-3">
-            Hafi Yawe • Close To You
+            Digital Streaming Network
           </span>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight mb-4">
-            About {settings.site_name || 'Rwanda Broadcasting Agency'}
+            About {siteName}
           </h1>
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-            The national public service multimedia broadcaster dedicated to educating, informing, and entertaining the citizens of Rwanda and audiences worldwide.
+            The modern live streaming and multimedia television network dedicated to informing, inspiring, and entertaining audiences worldwide.
           </p>
         </div>
       </div>
@@ -37,7 +39,7 @@ export const AboutPage: React.FC = () => {
             </div>
             <h2 className="text-xl font-black text-slate-900 mb-3">Our Mission</h2>
             <p className="text-slate-600 text-sm leading-relaxed">
-              To provide quality content that meets the needs of the audience and promotes cultural values, socio-economic development, and citizen participation in good governance.
+              To deliver world-class television streaming, news updates, sports events, and cultural entertainment with seamless global accessibility.
             </p>
           </div>
 
@@ -47,7 +49,7 @@ export const AboutPage: React.FC = () => {
             </div>
             <h2 className="text-xl font-black text-slate-900 mb-3">Our Vision</h2>
             <p className="text-slate-600 text-sm leading-relaxed">
-              To be a leading, modern public broadcaster in the region, delivering trusted, inspiring, and innovative content across all digital, television, and radio mediums.
+              To be an innovative digital broadcasting leader, offering high-fidelity live video streams, community audio, and interactive media.
             </p>
           </div>
         </div>
@@ -56,7 +58,7 @@ export const AboutPage: React.FC = () => {
         <div className="bg-white rounded-3xl p-8 sm:p-10 border border-slate-200 shadow-md space-y-6">
           <h3 className="text-2xl font-black text-slate-900">Broadcasting Network & Infrastructure</h3>
           <p className="text-slate-600 text-sm leading-relaxed">
-            RBA operates a comprehensive multimedia network reaching over 98% of Rwanda's population with terrestrial signals, and reaching millions more internationally through digital live streaming.
+            Benix Space TV provides an advanced cloud streaming infrastructure, reaching millions of viewers with ultra-low latency live television and audio channels.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-slate-100">
@@ -66,7 +68,7 @@ export const AboutPage: React.FC = () => {
               </div>
               <div>
                 <h4 className="font-bold text-slate-900 text-sm">Television Channels</h4>
-                <p className="text-xs text-slate-500 mt-0.5">RTV Live (DTT Ch 01) & KC2 Youth Channel</p>
+                <p className="text-xs text-slate-500 mt-0.5">High definition 1080p live streaming channels</p>
               </div>
             </div>
 
@@ -75,8 +77,8 @@ export const AboutPage: React.FC = () => {
                 <Radio className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 text-sm">Radio Rwanda</h4>
-                <p className="text-xs text-slate-500 mt-0.5">National public broadcast on 100.7 FM</p>
+                <h4 className="font-bold text-slate-900 text-sm">Radio Broadcasts</h4>
+                <p className="text-xs text-slate-500 mt-0.5">National public and music audio streams</p>
               </div>
             </div>
 
@@ -85,8 +87,8 @@ export const AboutPage: React.FC = () => {
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 text-sm">Community Radios</h4>
-                <p className="text-xs text-slate-500 mt-0.5">7 regional stations across all 4 provinces</p>
+                <h4 className="font-bold text-slate-900 text-sm">Global Viewers</h4>
+                <p className="text-xs text-slate-500 mt-0.5">Seamless web and mobile digital delivery</p>
               </div>
             </div>
           </div>

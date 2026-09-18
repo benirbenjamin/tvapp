@@ -1,5 +1,5 @@
 /**
- * Google AdSense Configuration for Rwanda Broadcasting Agency (RBA)
+ * Google AdSense Configuration for Benix Space TV
  */
 
 export const ADS_CONFIG = {

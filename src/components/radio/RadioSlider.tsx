@@ -90,7 +90,7 @@ export const RadioSlider: React.FC<RadioSliderProps> = ({ stations }) => {
             <RadioIcon className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900 tracking-tight">RBA Radio Network</h3>
+            <h3 className="text-lg font-bold text-slate-900 tracking-tight">Live Radio Network</h3>
             <p className="text-xs text-slate-500">Live community and national broadcasts across Rwanda</p>
           </div>
         </div>

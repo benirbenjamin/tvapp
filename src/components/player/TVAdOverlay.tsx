@@ -26,7 +26,7 @@ export const TVAdOverlay: React.FC<TVAdOverlayProps> = ({
   countdown,
   totalDuration = 10,
   onClose,
-  stationName = 'RTV Live',
+  stationName = 'Benix Space TV',
 }) => {
   const progressPercent = Math.max(0, Math.min(100, (countdown / totalDuration) * 100));
 

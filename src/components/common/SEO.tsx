@@ -18,10 +18,10 @@ export const SEO: React.FC<SEOProps> = ({
 }) => {
   const { settings } = useSettings();
 
-  const siteName = settings.site_name || 'Rwanda Broadcasting Agency (RBA)';
+  const siteName = settings.site_name || 'Benix Space TV';
   const defaultDesc =
     settings.site_description ||
-    'Watch RTV Live, KC2, and listen to Radio Rwanda and regional community stations online on Rwanda Broadcasting Agency.';
+    'Watch Live TV, sports, entertainment, and listen to radio broadcasts online on Benix Space TV.';
   const effectiveDescription = description || defaultDesc;
   const effectiveOgImage = ogImage || settings.logo_url || '/logo.png';
   const effectiveCanonical = canonical || `https://tv.benix.space${window.location.pathname}`;

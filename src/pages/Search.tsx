@@ -59,7 +59,7 @@ export const SearchPage: React.FC = () => {
       {/* Search Header Banner */}
       <div className="bg-rba-navy text-white py-12 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-2xl sm:text-4xl font-black mb-4">Search RBA Streaming</h1>
+          <h1 className="text-2xl sm:text-4xl font-black mb-4">Search Benix Space TV</h1>
           <form onSubmit={handleSubmit} className="relative">
             <input
               type="text"

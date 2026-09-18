@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Tv, Sparkles, Filter, Search, Calendar, ChevronRight, Play } from 'lucide-react';
+import { Tv, Filter, Search, Calendar, ChevronRight, Play } from 'lucide-react';
 import { Station, Video, Category } from '../types';
 import { getStations, getVideos, getCategories } from '../services/api';
 import { LiveTVPlayer } from '../components/player/LiveTVPlayer';
@@ -9,6 +9,7 @@ import { AdSenseBanner } from '../components/ads/AdSenseBanner';
 import { ADS_CONFIG } from '../config/ads';
 import { usePlayer } from '../context/PlayerContext';
 import { TVChannelList } from '../components/tv/TVChannelList';
+import { TVChannelSidebar } from '../components/tv/TVChannelSidebar';
 
 export const TVPage: React.FC = () => {
   const { setActiveTvStation, isTvPlaying } = usePlayer();
@@ -70,56 +71,58 @@ export const TVPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-rba-grayBg pb-20">
       <SEO
-        title="RTV Live TV & Video Bulletins"
-        description="Watch Rwanda Television (RTV) and KC2 live streaming, news bulletins, national reports, and special coverage."
+        title="Live TV Broadcasts & Video Bulletins | Benix Space TV"
+        description="Watch Benix Space TV live streaming, news bulletins, national reports, sports, and entertainment."
       />
 
-      {/* Hero TV Player Area */}
+      {/* Hero TV Player Area with TV Channel Selector in Sidebar */}
       <section className="bg-gradient-to-b from-rba-navy to-rba-navyLight text-white py-8 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           
-          {/* Header & Switcher */}
+          {/* Header (Clean, No Crowded Top Strip) */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
                 <span className="text-xs font-black uppercase tracking-wider text-red-400">
-                  RBA Television Network
+                  Benix Space TV Network
                 </span>
               </div>
               <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-                {selectedStation?.name || 'RTV LIVE'}
+                {selectedStation?.name || 'Live TV Broadcast'}
               </h1>
             </div>
-
-            {/* Redesigned TV Channels Switcher Strip */}
-            <TVChannelList
-              stations={tvStations}
-              selectedStation={selectedStation}
-              onSelectStation={setSelectedStation}
-              isPlaying={isTvPlaying}
-              layout="strip"
-            />
           </div>
 
-          {/* Large Live TV Player */}
-          <div className="max-w-5xl mx-auto">
-            {selectedStation ? (
-              <LiveTVPlayer station={selectedStation} autoPlay={false} />
-            ) : (
-              <div className="aspect-video bg-black/40 rounded-2xl flex items-center justify-center text-slate-400 text-sm">
-                Loading RTV Live broadcast...
-              </div>
-            )}
+          {/* Player & Sidebar Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Main TV Player (Left) */}
+            <div className="lg:col-span-8 xl:col-span-8 space-y-4">
+              {selectedStation ? (
+                <LiveTVPlayer station={selectedStation} autoPlay={false} />
+              ) : (
+                <div className="aspect-video bg-black/40 rounded-2xl flex items-center justify-center text-slate-400 text-sm">
+                  Loading live broadcast...
+                </div>
+              )}
 
-            {/* Live TV Companion Ad Banner (Auto-refreshes periodically without interrupting playback) */}
-            <div className="mt-6">
+              {/* TV Companion Ad Banner: Only displayed if filled by Google AdSense */}
               <AdSenseBanner
                 slot={ADS_CONFIG.SLOTS.TV_COMPANION_BANNER}
                 format="horizontal"
                 responsive={true}
                 refreshInterval={ADS_CONFIG.TV_BANNER_REFRESH_SECONDS}
                 label="Live TV Broadcast Sponsor"
+              />
+            </div>
+
+            {/* Sidebar: TV Channels List in the Sidebar */}
+            <div className="lg:col-span-4 xl:col-span-4">
+              <TVChannelSidebar
+                stations={tvStations}
+                selectedStation={selectedStation}
+                onSelectStation={setSelectedStation}
+                isPlaying={isTvPlaying}
               />
             </div>
           </div>
@@ -130,7 +133,7 @@ export const TVPage: React.FC = () => {
       {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-14">
         
-        {/* Dedicated Official RBA Television Channels Showcase */}
+        {/* Dedicated Benix Space TV Channels Showcase */}
         <TVChannelList
           stations={tvStations}
           selectedStation={selectedStation}
@@ -140,6 +143,8 @@ export const TVPage: React.FC = () => {
           }}
           isPlaying={isTvPlaying}
           layout="grid"
+          title="Benix Space TV Channels"
+          subtitle="Explore all available television channels on Benix Space TV"
         />
         
         {/* Section Title & Filter Bar */}
@@ -147,7 +152,7 @@ export const TVPage: React.FC = () => {
           <div>
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">Latest Videos & News</h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Catch up on full news bulletins, presidential updates, and sports highlights
+              Catch up on full news bulletins, reports, and sports highlights
             </p>
           </div>
 
@@ -211,17 +216,6 @@ export const TVPage: React.FC = () => {
             ))}
           </div>
         )}
-
-        {/* Video Catalog Sponsored Ad Banner */}
-        <div className="pt-4">
-          <AdSenseBanner
-            slot={ADS_CONFIG.SLOTS.IN_FEED_BANNER}
-            format="horizontal"
-            responsive={true}
-            refreshInterval={ADS_CONFIG.TV_BANNER_REFRESH_SECONDS}
-            label="Sponsored Partner"
-          />
-        </div>
 
       </div>
     </div>

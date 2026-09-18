@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tv, Sparkles, Radio, CheckCircle2, ChevronRight, Signal } from 'lucide-react';
+import { Tv, Signal } from 'lucide-react';
 import { Station } from '../../types';
 import { TVChannelCard } from './TVChannelCard';
 
@@ -19,27 +19,26 @@ export const TVChannelList: React.FC<TVChannelListProps> = ({
   onSelectStation,
   isPlaying = false,
   layout = 'grid',
-  title = 'Official RBA Television Channels',
-  subtitle = 'Experience high-definition live broadcasts across Rwanda national networks',
+  title = 'Benix Space TV Channels',
+  subtitle = 'Experience high-definition live broadcasts across Benix Space TV network',
 }) => {
   const tvStations = stations.filter((s) => s.station_type === 'TV' && s.is_active);
 
   if (tvStations.length === 0) return null;
 
-  // Strip Layout: Sleek pill switcher for hero headers
+  // Strip Layout: Sleek pill switcher for headers
   if (layout === 'strip') {
     return (
-      <div className="flex items-center gap-2 p-1.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/15 shadow-inner">
-        {tvStations.map((tv) => {
+      <div className="flex items-center gap-2 p-1.5 bg-black/40 backdrop-blur-md rounded-2xl border border-white/15 shadow-inner overflow-x-auto scrollbar-none">
+        {tvStations.map((tv, index) => {
           const isSelected = selectedStation?.id === tv.id;
-          const isRtv = tv.slug === 'rtv';
-          const badgeText = isRtv ? 'CH 01' : 'CH 02';
+          const channelNum = `CH ${String(index + 1).padStart(2, '0')}`;
 
           return (
             <button
               key={tv.id}
               onClick={() => onSelectStation(tv)}
-              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 relative ${
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 relative ${
                 isSelected
                   ? 'bg-rba-blue text-white shadow-lg shadow-rba-blue/30 scale-[1.02]'
                   : 'text-slate-300 hover:text-white hover:bg-white/10'
@@ -51,9 +50,9 @@ export const TVChannelList: React.FC<TVChannelListProps> = ({
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
               )}
               <span className="px-1.5 py-0.5 rounded bg-black/30 text-[9px] font-black uppercase tracking-wider text-slate-300">
-                {badgeText}
+                {channelNum}
               </span>
-              <span>{tv.name}</span>
+              <span className="truncate max-w-[120px]">{tv.name}</span>
             </button>
           );
         })}
@@ -68,7 +67,7 @@ export const TVChannelList: React.FC<TVChannelListProps> = ({
         <div>
           <div className="flex items-center gap-2 mb-1 text-rba-blue font-black text-xs uppercase tracking-widest">
             <Tv className="w-4 h-4" />
-            <span>Rwanda Broadcasting Agency Channels</span>
+            <span>Benix Space TV Channels</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
             {title}
@@ -87,15 +86,19 @@ export const TVChannelList: React.FC<TVChannelListProps> = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-        {tvStations.map((station) => (
-          <TVChannelCard
-            key={station.id}
-            station={station}
-            isSelected={selectedStation?.id === station.id}
-            isPlaying={isPlaying}
-            onSelect={onSelectStation}
-          />
-        ))}
+        {tvStations.map((station, index) => {
+          const channelNum = `CH ${String(index + 1).padStart(2, '0')}`;
+          return (
+            <TVChannelCard
+              key={station.id}
+              station={station}
+              isSelected={selectedStation?.id === station.id}
+              isPlaying={isPlaying}
+              onSelect={onSelectStation}
+              channelNumber={channelNum}
+            />
+          );
+        })}
       </div>
     </section>
   );

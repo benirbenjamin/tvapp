@@ -91,7 +91,7 @@ export const AdPopupModal: React.FC<AdPopupModalProps> = ({ isOpen, onClose }) =
 
           {/* Bottom Notice & Action */}
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-            <span>RBA Rwanda • Streaming Partner Network</span>
+            <span>Benix Space TV • Streaming Partner Network</span>
 
             <button
               onClick={canClose ? onClose : undefined}

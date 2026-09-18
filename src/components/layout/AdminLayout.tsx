@@ -88,7 +88,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
               }}
             />
             <div>
-              <h2 className="font-extrabold text-sm text-white tracking-wide">RBA Control</h2>
+              <h2 className="font-extrabold text-sm text-white tracking-wide">Benix Control</h2>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rba-blue/30 text-rba-blueLight border border-rba-blue/40 uppercase">
                 {user?.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Admin'}
               </span>

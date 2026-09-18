@@ -218,14 +218,14 @@ export const StationDetailPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-extrabold text-slate-900 mb-2">About {station.name}</h3>
               <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-4xl">
-                {station.description || 'Official broadcasting channel from Rwanda Broadcasting Agency (RBA).'}
+                {station.description || 'Official broadcasting channel on Benix Space TV.'}
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100">
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
                 <span className="text-xs font-semibold text-slate-500 block mb-1">Broadcaster</span>
-                <span className="text-sm font-bold text-slate-900">Rwanda Broadcasting Agency</span>
+                <span className="text-sm font-bold text-slate-900">Benix Space TV</span>
               </div>
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
                 <span className="text-xs font-semibold text-slate-500 block mb-1">Coverage Area</span>
@@ -246,7 +246,7 @@ export const StationDetailPage: React.FC = () => {
         {otherStations.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-extrabold text-slate-900">More RBA Stations</h2>
+              <h2 className="text-xl font-extrabold text-slate-900">More Stations</h2>
               <Link to="/radio" className="text-xs font-bold text-rba-blue hover:underline">
                 View All Stations
               </Link>

@@ -8,6 +8,7 @@ interface TVChannelCardProps {
   isSelected: boolean;
   isPlaying?: boolean;
   onSelect: (station: Station) => void;
+  channelNumber?: string;
 }
 
 export const TVChannelCard: React.FC<TVChannelCardProps> = ({
@@ -15,17 +16,18 @@ export const TVChannelCard: React.FC<TVChannelCardProps> = ({
   isSelected,
   isPlaying = false,
   onSelect,
+  channelNumber,
 }) => {
   const isRtv = station.slug === 'rtv';
   const isKc2 = station.slug === 'kc2';
 
   // Customized branding accents and genre tags
-  const channelBadge = isRtv ? 'CH 01' : isKc2 ? 'CH 02' : 'TV';
+  const channelBadge = channelNumber || (isRtv ? 'CH 01' : isKc2 ? 'CH 02' : 'TV');
   const channelCategory = isRtv
-    ? 'National Public Television'
+    ? 'National Television Channel'
     : isKc2
     ? 'Youth, Sports & Entertainment'
-    : 'Television Broadcast';
+    : 'Benix Space TV Network';
 
   const channelTags = isRtv
     ? ['National News', 'Documentaries', 'Culture', 'Current Affairs']

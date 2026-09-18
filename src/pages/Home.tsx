@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Play, Tv, Radio, Sparkles, ChevronRight, Volume2, TrendingUp, Flame } from 'lucide-react';
+import { Play, Tv, Radio, Sparkles, ChevronRight, TrendingUp, Flame } from 'lucide-react';
 import { Station, Video } from '../types';
 import { getStations, getVideos } from '../services/api';
 import { LiveTVPlayer } from '../components/player/LiveTVPlayer';
@@ -12,6 +12,7 @@ import { AdSenseBanner } from '../components/ads/AdSenseBanner';
 import { ADS_CONFIG } from '../config/ads';
 import { usePlayer } from '../context/PlayerContext';
 import { TVChannelList } from '../components/tv/TVChannelList';
+import { TVChannelSidebar } from '../components/tv/TVChannelSidebar';
 
 export const Home: React.FC = () => {
   const { setActiveTvStation, isTvPlaying } = usePlayer();
@@ -39,7 +40,7 @@ export const Home: React.FC = () => {
 
         const tvStations = stationsData.filter((s) => s.station_type === 'TV' && s.is_active);
         if (tvStations.length > 0) {
-          // Default to RTV Live
+          // Default to RTV Live or first station
           const rtv = tvStations.find((s) => s.slug === 'rtv') || tvStations[0];
           setSelectedTvStation(rtv);
           setActiveTvStation(rtv);
@@ -62,40 +63,32 @@ export const Home: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-rba-grayBg">
-      <SEO title="RTV Live & Radio Rwanda Streaming" />
+      <SEO title="Live TV & Radio Broadcast Streaming" />
 
-      {/* Hero Section: Live TV & Channels Switcher */}
+      {/* Hero Section: Live TV Player with Dedicated Channel Selector Sidebar */}
       <section className="bg-gradient-to-b from-rba-navy to-rba-navyLight text-white pt-6 pb-12 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           
-          {/* Channel Selector Header */}
+          {/* Channel Header (Clean & Uncluttered, No Top Strip) */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
                 <span className="text-xs font-black uppercase tracking-widest text-red-400">
-                  National Television Network
+                  Benix Space TV Network
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
-                {selectedTvStation?.name || 'RTV LIVE'}
+                {selectedTvStation?.name || 'Live TV Broadcast'}
               </h1>
             </div>
-
-            {/* Redesigned TV Channels Switcher Strip */}
-            <TVChannelList
-              stations={tvStations}
-              selectedStation={selectedTvStation}
-              onSelectStation={setSelectedTvStation}
-              isPlaying={isTvPlaying}
-              layout="strip"
-            />
           </div>
 
-          {/* Hero Player & Right Live Schedule / Highlights */}
+          {/* Hero Player & Right Live Channels Sidebar */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Live TV Player Container */}
-            <div className="lg:col-span-8 xl:col-span-9 space-y-4">
+            
+            {/* Live TV Player Container (Left / Main) */}
+            <div className="lg:col-span-8 xl:col-span-8 space-y-4">
               {selectedTvStation ? (
                 <LiveTVPlayer station={selectedTvStation} autoPlay={false} />
               ) : (
@@ -104,7 +97,7 @@ export const Home: React.FC = () => {
                 </div>
               )}
 
-              {/* TV Companion Ad Banner (Auto-refreshes periodically without interrupting playback) */}
+              {/* TV Companion Ad Banner: Appears ONLY when Google AdSense fills an ad */}
               <AdSenseBanner
                 slot={ADS_CONFIG.SLOTS.TV_COMPANION_BANNER}
                 format="horizontal"
@@ -114,56 +107,44 @@ export const Home: React.FC = () => {
               />
             </div>
 
-            {/* Sidebar Highlights */}
-            <div className="lg:col-span-4 xl:col-span-3 space-y-4">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-3">
+            {/* Sidebar: TV Channels List in the Sidebar for clean, professional layout */}
+            <div className="lg:col-span-4 xl:col-span-4 space-y-4">
+              {/* Vertical Scrollable TV Channel Selector */}
+              <TVChannelSidebar
+                stations={tvStations}
+                selectedStation={selectedTvStation}
+                onSelectStation={setSelectedTvStation}
+                isPlaying={isTvPlaying}
+              />
+
+              {/* Live Program Highlight */}
+              <div className="bg-white/5 border border-white/10 rounded-3xl p-5 backdrop-blur-sm">
+                <div className="flex items-center justify-between mb-2.5">
                   <span className="text-xs font-bold uppercase tracking-wider text-rba-yellow flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" /> Live Now
+                    <Sparkles className="w-3.5 h-3.5" /> Now Streaming
                   </span>
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-600 text-white uppercase">
                     On Air
                   </span>
                 </div>
-                <h3 className="font-extrabold text-white text-base mb-1">
+                <h4 className="font-extrabold text-white text-sm mb-1">
                   {selectedTvStation?.name} Broadcast
-                </h3>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                </h4>
+                <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">
                   {selectedTvStation?.description}
                 </p>
               </div>
-
-              {/* Radio Quick Banner */}
-              <div className="bg-gradient-to-br from-amber-500/20 to-rba-blue/20 border border-amber-500/30 rounded-2xl p-5">
-                <div className="flex items-center gap-2 text-rba-yellow text-xs font-bold mb-2">
-                  <Radio className="w-4 h-4" />
-                  <span>Radio Rwanda • 100.7 FM</span>
-                </div>
-                <h4 className="font-bold text-white text-sm mb-2">
-                  Listen to national and regional community radio stations
-                </h4>
-                <Link
-                  to="/radio"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-rba-yellow hover:underline"
-                >
-                  Explore All 8+ Radio Stations <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
             </div>
+
           </div>
 
         </div>
       </section>
 
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-14">
+      {/* Main Container (TV Sections Come First, Radio Follows) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-14">
         
-        {/* Horizontal Radio Slider Carousel */}
-        <section>
-          <RadioSlider stations={stations} />
-        </section>
-
-        {/* Official RBA Television Channels Showcase */}
+        {/* 1. Official Benix Space TV Channels Showcase Grid (FIRST) */}
         <section>
           <TVChannelList
             stations={tvStations}
@@ -174,12 +155,12 @@ export const Home: React.FC = () => {
             }}
             isPlaying={isTvPlaying}
             layout="grid"
-            title="Watch Live RBA Television"
-            subtitle="Switch between Rwanda Television (RTV) and KC2 live broadcasts"
+            title="Benix Space TV Channels"
+            subtitle="Switch between live television streams on the Benix Space TV network"
           />
         </section>
 
-        {/* Latest RTV Videos Section */}
+        {/* 2. Latest Television Videos & Bulletins (SECOND) */}
         <section>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
@@ -187,7 +168,7 @@ export const Home: React.FC = () => {
                 <Tv className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Latest RTV Videos</h2>
+                <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Latest Videos & News Bulletins</h2>
                 <p className="text-xs text-slate-500">Official news reports, special coverage, and stories</p>
               </div>
             </div>
@@ -196,7 +177,7 @@ export const Home: React.FC = () => {
               to="/tv"
               className="text-xs font-bold text-rba-blue hover:text-rba-navy flex items-center gap-1 transition-colors"
             >
-              View All <ChevronRight className="w-4 h-4" />
+              View All Videos <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
 
@@ -207,7 +188,7 @@ export const Home: React.FC = () => {
           </div>
         </section>
 
-        {/* Most Watched Section */}
+        {/* 3. Most Watched & Trending Videos (THIRD) */}
         {mostWatched.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-6">
@@ -217,7 +198,7 @@ export const Home: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Trending & Most Watched</h2>
-                  <p className="text-xs text-slate-500">Popular broadcasts this week on Rwanda Broadcasting Agency</p>
+                  <p className="text-xs text-slate-500">Popular broadcasts this week on Benix Space TV</p>
                 </div>
               </div>
             </div>
@@ -230,16 +211,16 @@ export const Home: React.FC = () => {
           </section>
         )}
 
-        {/* All Radio Stations Grid */}
-        <section>
+        {/* 4. Live Radio Stations Carousel (FOURTH - Follows TV sections) */}
+        <section className="pt-6 border-t border-slate-200">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-amber-50 text-amber-600">
                 <Radio className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Official Radio Stations</h2>
-                <p className="text-xs text-slate-500">Tune in live from Kigali, Rubavu, Musanze, Huye, Rusizi, Nyagatare</p>
+                <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Live Radio Broadcasts</h2>
+                <p className="text-xs text-slate-500">Listen to national and regional community radio stations</p>
               </div>
             </div>
 
@@ -247,10 +228,15 @@ export const Home: React.FC = () => {
               to="/radio"
               className="text-xs font-bold text-rba-blue hover:text-rba-navy flex items-center gap-1 transition-colors"
             >
-              Full Radio Guide <ChevronRight className="w-4 h-4" />
+              Explore All Radio Stations <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
 
+          <RadioSlider stations={stations} />
+        </section>
+
+        {/* 5. All Radio Stations Grid */}
+        <section>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {radioStations.map((station) => (
               <StationCard key={station.id} station={station} />

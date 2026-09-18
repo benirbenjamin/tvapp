@@ -3,17 +3,17 @@ import { SiteSettings } from '../types';
 import { getSettings, updateSettings as apiUpdateSettings } from '../services/api';
 
 const DEFAULT_SETTINGS: SiteSettings = {
-  site_name: 'Rwanda Broadcasting Agency (RBA)',
-  site_description: "Rwanda's leading public service multimedia broadcaster. Stream RTV Live, KC2, and Radio Rwanda online anywhere.",
+  site_name: 'Benix Space TV',
+  site_description: "Premier digital television network. Stream Live TV, sports, entertainment, and multimedia streaming worldwide.",
   logo_url: '/logo.png',
-  contact_email: 'info@rba.co.rw',
-  contact_phone: '+250 252 576 540',
-  address: 'KG 7 Ave, Kacyiru, P.O. Box 83 Kigali - Rwanda',
-  facebook_url: 'https://facebook.com/rba.rwanda',
-  twitter_url: 'https://twitter.com/RBA_Rwanda',
-  youtube_url: 'https://youtube.com/c/RwandaBroadcastingAgency',
-  instagram_url: 'https://instagram.com/rba.rwanda',
-  footer_text: '© ' + new Date().getFullYear() + ' Rwanda Broadcasting Agency (RBA). All rights reserved.',
+  contact_email: 'info@benix.space',
+  contact_phone: '+250 788 123 456',
+  address: 'Kigali, Rwanda',
+  facebook_url: 'https://facebook.com/benixspace',
+  twitter_url: 'https://twitter.com/BenixSpaceTV',
+  youtube_url: 'https://youtube.com',
+  instagram_url: 'https://instagram.com/benixspace',
+  footer_text: '© ' + new Date().getFullYear() + ' Benix Space TV. All rights reserved.',
 };
 
 const STORAGE_KEY = 'rba_site_settings_cache';

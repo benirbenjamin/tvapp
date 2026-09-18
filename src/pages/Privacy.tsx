@@ -6,8 +6,8 @@ export const PrivacyPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-rba-grayBg pb-20">
       <SEO
-        title="Privacy & Data Protection Policy"
-        description="Learn how Rwanda Broadcasting Agency respects your privacy, safeguards anonymous streaming telemetry, and protects user data."
+        title="Privacy & Data Protection Policy | Benix Space TV"
+        description="Learn how Benix Space TV respects your privacy, safeguards anonymous streaming telemetry, and protects user data."
       />
 
       {/* Header */}
@@ -18,7 +18,7 @@ export const PrivacyPage: React.FC = () => {
           </span>
           <h1 className="text-3xl sm:text-5xl font-black mb-3">Privacy Policy</h1>
           <p className="text-slate-300 text-sm sm:text-base">
-            Rwanda Broadcasting Agency is committed to protecting your privacy and ensuring transparency.
+            Benix Space TV is committed to protecting your privacy and ensuring transparency.
           </p>
         </div>
       </div>
@@ -32,7 +32,7 @@ export const PrivacyPage: React.FC = () => {
               1. Anonymous Audience Telemetry
             </h2>
             <p>
-              To maintain reliable streaming servers and understand which regional stations and broadcasts audiences appreciate, our platform uses anonymous pseudonymous identifiers stored locally in your browser (via LocalStorage/SessionStorage).
+              To maintain reliable streaming servers and understand which broadcasts audiences appreciate, our platform uses anonymous pseudonymous identifiers stored locally in your browser (via LocalStorage/SessionStorage).
             </p>
             <p>
               We do <strong>NOT</strong> collect your name, email, phone number, device camera, microphone, or any sensitive personal communications when you listen to our radio or watch our television streams.
@@ -58,17 +58,17 @@ export const PrivacyPage: React.FC = () => {
               3. Administrative Security
             </h2>
             <p>
-              Administrative accounts for RBA staff are safeguarded with salted bcrypt password hashing and cryptographic JSON Web Tokens (JWT) using role-based access control. All communication between your client and our streaming endpoints is secured using SSL/TLS encryption.
+              Administrative accounts for authorized staff are safeguarded with salted bcrypt password hashing and cryptographic JSON Web Tokens (JWT) using role-based access control. All communication between your client and our streaming endpoints is secured using SSL/TLS encryption.
             </p>
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-extrabold text-slate-900">4. Contacting Data Protection Officer</h2>
             <p>
-              If you have any questions regarding privacy practices at Rwanda Broadcasting Agency, you may contact our office at:
+              If you have any questions regarding privacy practices at Benix Space TV, you may contact our office at:
             </p>
             <p className="font-semibold text-slate-900">
-              Email: info@rba.co.rw • Phone: +250 252 576 540 • Address: KG 7 Ave, Kacyiru, Kigali, Rwanda
+              Email: info@benix.space • Web: tv.benix.space
             </p>
           </section>
 

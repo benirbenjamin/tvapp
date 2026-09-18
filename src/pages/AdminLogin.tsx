@@ -43,7 +43,7 @@ export const AdminLoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      <SEO title="Admin Login | RBA Management Portal" />
+      <SEO title="Admin Login | Benix Space TV Management Portal" />
 
       {/* Decorative background glow */}
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-rba-blue/20 rounded-full blur-3xl pointer-events-none" />
@@ -60,13 +60,13 @@ export const AdminLoginPage: React.FC = () => {
         <div className="text-center mb-8">
           <img
             src={settings.logo_url || '/logo.png'}
-            alt={settings.site_name || 'RBA'}
+            alt={settings.site_name || 'Benix Space TV'}
             className="h-14 w-auto mx-auto object-contain mb-3 drop-shadow"
             onError={(e) => {
               (e.target as HTMLImageElement).src = '/logo.png';
             }}
           />
-          <h2 className="text-2xl font-black text-white tracking-tight">{settings.site_name || 'RBA'} Admin Portal</h2>
+          <h2 className="text-2xl font-black text-white tracking-tight">{settings.site_name || 'Benix Space TV'} Admin Portal</h2>
           <p className="text-xs text-slate-400 mt-1">
             Authorized management access for broadcast engineers and content editors
           </p>
@@ -133,7 +133,7 @@ export const AdminLoginPage: React.FC = () => {
 
           <div className="mt-6 pt-5 border-t border-slate-700/60 text-center">
             <p className="text-[11px] text-slate-400">
-              Access restricted to authorized RBA broadcast engineers & editorial staff.
+              Access restricted to authorized broadcast engineers & editorial staff.
             </p>
           </div>
         </div>
