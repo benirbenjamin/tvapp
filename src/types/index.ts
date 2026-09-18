@@ -127,3 +127,16 @@ export interface AnalyticsChartsData {
   topStations: TopStationMetric[];
   topVideos: TopVideoMetric[];
 }
+
+export interface Comment {
+  id: string;
+  station_id?: string;
+  station_slug: string;
+  parent_id?: string | null;
+  author_name: string;
+  content: string;
+  likes_count: number;
+  created_at: string;
+  replies?: Comment[];
+}
+

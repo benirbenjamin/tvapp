@@ -10,6 +10,7 @@ import { ADS_CONFIG } from '../config/ads';
 import { usePlayer } from '../context/PlayerContext';
 import { TVChannelList } from '../components/tv/TVChannelList';
 import { TVChannelSidebar } from '../components/tv/TVChannelSidebar';
+import { TVLiveChat } from '../components/chat/TVLiveChat';
 
 export const TVPage: React.FC = () => {
   const { setActiveTvStation, isTvPlaying } = usePlayer();
@@ -114,6 +115,11 @@ export const TVPage: React.FC = () => {
                 refreshInterval={ADS_CONFIG.TV_BANNER_REFRESH_SECONDS}
                 label="Live TV Broadcast Sponsor"
               />
+
+              {/* Live TV Discussion & Interactive Chat (Station-specific, Daily grouped, Threaded replies) */}
+              {selectedStation && (
+                <TVLiveChat station={selectedStation} />
+              )}
             </div>
 
             {/* Sidebar: TV Channels List in the Sidebar */}

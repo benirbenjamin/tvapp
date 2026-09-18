@@ -118,6 +118,18 @@ CREATE TABLE IF NOT EXISTS site_settings (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
+-- Comments Table (Station-specific Live TV comments & threaded replies)
+CREATE TABLE IF NOT EXISTS comments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    station_id UUID REFERENCES stations(id) ON DELETE CASCADE,
+    station_slug VARCHAR(255) NOT NULL,
+    parent_id UUID REFERENCES comments(id) ON DELETE CASCADE,
+    author_name VARCHAR(100) NOT NULL,
+    content TEXT NOT NULL,
+    likes_count INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_stations_active ON stations (is_active, display_order);
 CREATE INDEX IF NOT EXISTS idx_stations_slug ON stations (slug);
@@ -128,3 +140,5 @@ CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON page_views (created_at);
 CREATE INDEX IF NOT EXISTS idx_media_events_created_at ON media_events (created_at);
 CREATE INDEX IF NOT EXISTS idx_media_events_type ON media_events (event_type);
 CREATE INDEX IF NOT EXISTS idx_sessions_started_at ON sessions (started_at);
+CREATE INDEX IF NOT EXISTS idx_comments_station ON comments (station_slug, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments (parent_id);

@@ -8,6 +8,7 @@ import categoriesRoutes from './routes/categories.js';
 import analyticsRoutes from './routes/analytics.js';
 import usersRoutes from './routes/users.js';
 import settingsRoutes from './routes/settings.js';
+import commentsRoutes from './routes/comments.js';
 
 const app = express();
 
@@ -69,6 +70,7 @@ app.use('/api/categories', categoriesRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin/users', usersRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/comments', commentsRoutes);
 
 // 404 handler for unknown API routes
 app.use('/api/*', (_req: Request, res: Response) => {
