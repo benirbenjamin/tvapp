@@ -26,10 +26,12 @@ interface PlayerContextType {
   isTvPlaying: boolean;
   isTvMuted: boolean;
   isTvPipDismissed: boolean;
+  hasTvStarted: boolean;
   playTv: (station: Station) => void;
   pauseTv: () => void;
   toggleTvPlay: () => void;
   toggleTvMute: () => void;
+  setTvMuted: (muted: boolean) => void;
   closeTvPip: () => void;
   setActiveTvStation: (station: Station) => void;
 }
@@ -50,8 +52,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // TV & Picture-in-Picture State
   const [activeTvStation, setActiveTvStation] = useState<Station | null>(null);
   const [isTvPlaying, setIsTvPlaying] = useState<boolean>(false);
-  const [isTvMuted, setIsTvMuted] = useState<boolean>(true);
+  // Starts unmuted as requested by user
+  const [isTvMuted, setIsTvMuted] = useState<boolean>(false);
   const [isTvPipDismissed, setIsTvPipDismissed] = useState<boolean>(false);
+  const [hasTvStarted, setHasTvStarted] = useState<boolean>(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -221,6 +225,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setActiveTvStation(station);
     setIsTvPlaying(true);
     setIsTvPipDismissed(false);
+    setHasTvStarted(true);
   };
 
   const pauseTv = () => {
@@ -236,12 +241,17 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const toggleTvMute = () => {
-    setIsTvMuted(!isTvMuted);
+    setIsTvMuted((prev) => !prev);
+  };
+
+  const setTvMuted = (muted: boolean) => {
+    setIsTvMuted(muted);
   };
 
   const closeTvPip = () => {
     setIsTvPipDismissed(true);
     setIsTvPlaying(false);
+    setHasTvStarted(false);
   };
 
   return (
@@ -269,10 +279,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isTvPlaying,
         isTvMuted,
         isTvPipDismissed,
+        hasTvStarted,
         playTv,
         pauseTv,
         toggleTvPlay,
         toggleTvMute,
+        setTvMuted,
         closeTvPip,
         setActiveTvStation,
       }}

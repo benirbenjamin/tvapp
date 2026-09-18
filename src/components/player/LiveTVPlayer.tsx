@@ -15,6 +15,8 @@ import {
 import { Station } from '../../types';
 import { usePlayer } from '../../context/PlayerContext';
 import { trackEvent } from '../../services/api';
+import { TV_SPONSORED_ADS } from '../../data/tvAds';
+import { TVAdOverlay } from './TVAdOverlay';
 
 interface LiveTVPlayerProps {
   station: Station;
@@ -27,7 +29,7 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
   className = '',
   autoPlay = false,
 }) => {
-  const { playTv, pauseTv, isTvPlaying, playStation } = usePlayer();
+  const { playTv, pauseTv, isTvPlaying, isTvMuted, toggleTvMute, setTvMuted } = usePlayer();
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -37,12 +39,61 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isBuffering, setIsBuffering] = useState<boolean>(false);
   const [volume, setVolumeState] = useState<number>(1);
-  // Start unmuted as requested by user
-  const [isMuted, setIsMuted] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showControls, setShowControls] = useState<boolean>(true);
   const controlsTimeoutRef = useRef<any>(null);
+
+  // Sponsored Ad System
+  // First ad after 1 minute (60s), then every 5 minutes (300s) thereafter for 10s countdown
+  const [isAdActive, setIsAdActive] = useState<boolean>(false);
+  const [adCountdown, setAdCountdown] = useState<number>(10);
+  const [currentAdIndex, setCurrentAdIndex] = useState<number>(0);
+  const watchSecondsRef = useRef<number>(0);
+  const nextAdTargetRef = useRef<number>(60); // First ad at 60s (1 min)
+
+  // Track active watch time and trigger ad every 5 minutes after initial 1 minute
+  useEffect(() => {
+    // Only accumulate watch time when TV is actively playing and ad is not currently active
+    if (!isTvPlaying || isAdActive) return;
+
+    const watchTimer = setInterval(() => {
+      watchSecondsRef.current += 1;
+
+      if (watchSecondsRef.current >= nextAdTargetRef.current) {
+        // Schedule next ad in 5 minutes (300 seconds)
+        nextAdTargetRef.current = watchSecondsRef.current + 300;
+        // Cycle to next ad so every time it loads a different ad
+        setCurrentAdIndex((prev) => (prev + 1) % TV_SPONSORED_ADS.length);
+        setIsAdActive(true);
+        setAdCountdown(10);
+      }
+    }, 1000);
+
+    return () => clearInterval(watchTimer);
+  }, [isTvPlaying, isAdActive]);
+
+  // 10-second countdown for the active ad overlay (Live TV audio continues speaking)
+  useEffect(() => {
+    if (!isAdActive) return;
+
+    const countdownTimer = setInterval(() => {
+      setAdCountdown((prev) => {
+        if (prev <= 1) {
+          setIsAdActive(false);
+          return 10;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdownTimer);
+  }, [isAdActive]);
+
+  const handleCloseAd = () => {
+    setIsAdActive(false);
+    setAdCountdown(10);
+  };
 
   const loadStream = () => {
     const video = videoRef.current;
@@ -139,11 +190,12 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
     }
   };
 
-  const attemptPlay = (startMutedIfBlocked = true) => {
+  const attemptPlay = (startMutedIfBlocked = false) => {
     const video = videoRef.current;
     if (!video) return;
 
-    video.muted = isMuted;
+    video.muted = isTvMuted;
+    video.volume = volume;
     const playPromise = video.play();
 
     if (playPromise !== undefined) {
@@ -158,9 +210,9 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
         .catch((err) => {
           console.warn('Autoplay unmuted blocked by browser policy:', err);
           if (startMutedIfBlocked) {
-            // If browser blocks unmuted autoplay, mute as fallback and start playback
+            // Fallback to muted only if blocked by browser policy so video starts
             video.muted = true;
-            setIsMuted(true);
+            setTvMuted(true);
             video.play().then(() => playTv(station)).catch(() => {});
           }
         });
@@ -197,7 +249,9 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
       if (error) {
         loadStream();
       } else {
-        video.muted = isMuted;
+        // User gesture enables full unmuted audio!
+        video.muted = isTvMuted;
+        video.volume = volume;
         video.play().then(() => {
           playTv(station);
         }).catch(() => {
@@ -216,18 +270,18 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
     const clamped = Math.max(0, Math.min(1, newVol));
     video.volume = clamped;
     setVolumeState(clamped);
-    if (clamped > 0 && isMuted) {
+    if (clamped > 0 && isTvMuted) {
       video.muted = false;
-      setIsMuted(false);
+      setTvMuted(false);
     }
   };
 
-  const toggleMute = () => {
+  const handleToggleMute = () => {
     const video = videoRef.current;
     if (!video) return;
-    const nextMute = !isMuted;
+    const nextMute = !isTvMuted;
     video.muted = nextMute;
-    setIsMuted(nextMute);
+    toggleTvMute();
   };
 
   const toggleFullscreen = () => {
@@ -249,7 +303,7 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
     }, 3500);
   };
 
-  // Debounced buffering state (prevents flashing "Optimizing buffer" on normal micro-delays)
+  // Debounced buffering state (prevents flashing "Buffering" on normal micro-delays)
   const handleWaiting = () => {
     if (bufferingTimerRef.current) clearTimeout(bufferingTimerRef.current);
     bufferingTimerRef.current = setTimeout(() => {
@@ -275,7 +329,7 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
       <video
         ref={videoRef}
         playsInline
-        muted={isMuted}
+        muted={isTvMuted}
         onPlay={handlePlaying}
         onPause={() => pauseTv()}
         onWaiting={handleWaiting}
@@ -291,7 +345,7 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
 
       {/* Top Banner (Station Name + Live Badge) */}
       <div
-        className={`absolute top-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-b from-black/85 via-black/35 to-transparent flex items-center justify-between transition-opacity duration-300 pointer-events-none ${
+        className={`absolute top-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-b from-black/85 via-black/35 to-transparent flex items-center justify-between transition-opacity duration-300 pointer-events-none z-10 ${
           showControls || !isTvPlaying ? 'opacity-100' : 'opacity-0'
         }`}
       >
@@ -359,6 +413,31 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
         </button>
       )}
 
+      {/* Tap to Unmute Banner if browser blocked sound on initial autoplay */}
+      {isTvPlaying && isTvMuted && !isAdActive && (
+        <button
+          onClick={() => {
+            if (videoRef.current) videoRef.current.muted = false;
+            setTvMuted(false);
+          }}
+          className="absolute top-14 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/95 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-lg animate-bounce transition-all"
+        >
+          <VolumeX className="w-4 h-4" />
+          <span>Sound muted by browser • Tap to unmute</span>
+        </button>
+      )}
+
+      {/* 10-Second Sponsored Ad Overlay (Live audio continues speaking in background) */}
+      {isAdActive && isTvPlaying && TV_SPONSORED_ADS[currentAdIndex] && (
+        <TVAdOverlay
+          ad={TV_SPONSORED_ADS[currentAdIndex]}
+          countdown={adCountdown}
+          totalDuration={10}
+          onClose={handleCloseAd}
+          stationName={station.name}
+        />
+      )}
+
       {/* Bottom Controls Bar */}
       <div
         className={`absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex items-center justify-between transition-opacity duration-300 z-20 ${
@@ -376,11 +455,11 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
 
           <div className="flex items-center gap-2">
             <button
-              onClick={toggleMute}
+              onClick={handleToggleMute}
               className="p-2 rounded-lg text-white hover:bg-white/20 transition-colors"
               aria-label="Toggle mute"
             >
-              {isMuted || volume === 0 ? (
+              {isTvMuted || volume === 0 ? (
                 <VolumeX className="w-5 h-5 text-rba-yellow" />
               ) : (
                 <Volume2 className="w-5 h-5" />
@@ -391,7 +470,7 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
               min="0"
               max="1"
               step="0.05"
-              value={isMuted ? 0 : volume}
+              value={isTvMuted ? 0 : volume}
               onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
               className="w-16 sm:w-24 h-1.5 bg-white/30 rounded-lg appearance-none cursor-pointer accent-rba-blue"
               aria-label="Volume"

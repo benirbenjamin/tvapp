@@ -7,8 +7,11 @@ import { VideoCard } from '../components/video/VideoCard';
 import { SEO } from '../components/common/SEO';
 import { AdSenseBanner } from '../components/ads/AdSenseBanner';
 import { ADS_CONFIG } from '../config/ads';
+import { usePlayer } from '../context/PlayerContext';
+import { TVChannelList } from '../components/tv/TVChannelList';
 
 export const TVPage: React.FC = () => {
+  const { setActiveTvStation, isTvPlaying } = usePlayer();
   const [tvStations, setTvStations] = useState<Station[]>([]);
   const [selectedStation, setSelectedStation] = useState<Station | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -16,6 +19,12 @@ export const TVPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (selectedStation) {
+      setActiveTvStation(selectedStation);
+    }
+  }, [selectedStation, setActiveTvStation]);
 
   useEffect(() => {
     const loadTVData = async () => {
@@ -30,6 +39,7 @@ export const TVPage: React.FC = () => {
         if (stationsData.length > 0) {
           const rtv = stationsData.find((s) => s.slug === 'rtv') || stationsData[0];
           setSelectedStation(rtv);
+          setActiveTvStation(rtv);
         }
         setCategories(categoriesData);
         setVideos(videosData.data || []);
@@ -41,7 +51,7 @@ export const TVPage: React.FC = () => {
     };
 
     loadTVData();
-  }, []);
+  }, [setActiveTvStation]);
 
   const filteredVideos = videos.filter((vid) => {
     const matchesSearch =
@@ -82,25 +92,14 @@ export const TVPage: React.FC = () => {
               </h1>
             </div>
 
-            {/* TV Channels Switcher */}
-            {tvStations.length > 1 && (
-              <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                {tvStations.map((st) => (
-                  <button
-                    key={st.id}
-                    onClick={() => setSelectedStation(st)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                      selectedStation?.id === st.id
-                        ? 'bg-rba-blue text-white shadow-md'
-                        : 'text-slate-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <Tv className="w-4 h-4" />
-                    <span>{st.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Redesigned TV Channels Switcher Strip */}
+            <TVChannelList
+              stations={tvStations}
+              selectedStation={selectedStation}
+              onSelectStation={setSelectedStation}
+              isPlaying={isTvPlaying}
+              layout="strip"
+            />
           </div>
 
           {/* Large Live TV Player */}
@@ -128,8 +127,20 @@ export const TVPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Video Catalog Section (News, Rwanda, Sports, Entertainment) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-8">
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-14">
+        
+        {/* Dedicated Official RBA Television Channels Showcase */}
+        <TVChannelList
+          stations={tvStations}
+          selectedStation={selectedStation}
+          onSelectStation={(st) => {
+            setSelectedStation(st);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          isPlaying={isTvPlaying}
+          layout="grid"
+        />
         
         {/* Section Title & Filter Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

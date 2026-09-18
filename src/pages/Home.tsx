@@ -10,12 +10,21 @@ import { SEO } from '../components/common/SEO';
 import { Link } from 'react-router-dom';
 import { AdSenseBanner } from '../components/ads/AdSenseBanner';
 import { ADS_CONFIG } from '../config/ads';
+import { usePlayer } from '../context/PlayerContext';
+import { TVChannelList } from '../components/tv/TVChannelList';
 
 export const Home: React.FC = () => {
+  const { setActiveTvStation, isTvPlaying } = usePlayer();
   const [stations, setStations] = useState<Station[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
   const [selectedTvStation, setSelectedTvStation] = useState<Station | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (selectedTvStation) {
+      setActiveTvStation(selectedTvStation);
+    }
+  }, [selectedTvStation, setActiveTvStation]);
 
   useEffect(() => {
     const loadHomeData = async () => {
@@ -33,6 +42,7 @@ export const Home: React.FC = () => {
           // Default to RTV Live
           const rtv = tvStations.find((s) => s.slug === 'rtv') || tvStations[0];
           setSelectedTvStation(rtv);
+          setActiveTvStation(rtv);
         }
       } catch (err) {
         console.error('Failed to load home page data:', err);
@@ -42,7 +52,7 @@ export const Home: React.FC = () => {
     };
 
     loadHomeData();
-  }, []);
+  }, [setActiveTvStation]);
 
   const tvStations = stations.filter((s) => s.station_type === 'TV' && s.is_active);
   const radioStations = stations.filter((s) => s.station_type === 'RADIO' && s.is_active);
@@ -72,25 +82,14 @@ export const Home: React.FC = () => {
               </h1>
             </div>
 
-            {/* TV Channel Switcher Tabs (RTV / KC2) */}
-            {tvStations.length > 1 && (
-              <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-2xl border border-white/10 backdrop-blur-sm self-start sm:self-auto">
-                {tvStations.map((tv) => (
-                  <button
-                    key={tv.id}
-                    onClick={() => setSelectedTvStation(tv)}
-                    className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 ${
-                      selectedTvStation?.id === tv.id
-                        ? 'bg-rba-blue text-white shadow-md'
-                        : 'text-slate-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <Tv className="w-3.5 h-3.5" />
-                    <span>{tv.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Redesigned TV Channels Switcher Strip */}
+            <TVChannelList
+              stations={tvStations}
+              selectedStation={selectedTvStation}
+              onSelectStation={setSelectedTvStation}
+              isPlaying={isTvPlaying}
+              layout="strip"
+            />
           </div>
 
           {/* Hero Player & Right Live Schedule / Highlights */}
@@ -162,6 +161,22 @@ export const Home: React.FC = () => {
         {/* Horizontal Radio Slider Carousel */}
         <section>
           <RadioSlider stations={stations} />
+        </section>
+
+        {/* Official RBA Television Channels Showcase */}
+        <section>
+          <TVChannelList
+            stations={tvStations}
+            selectedStation={selectedTvStation}
+            onSelectStation={(tv) => {
+              setSelectedTvStation(tv);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            isPlaying={isTvPlaying}
+            layout="grid"
+            title="Watch Live RBA Television"
+            subtitle="Switch between Rwanda Television (RTV) and KC2 live broadcasts"
+          />
         </section>
 
         {/* Latest RTV Videos Section */}
