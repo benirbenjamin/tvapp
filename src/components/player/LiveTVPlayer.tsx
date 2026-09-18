@@ -11,6 +11,9 @@ import {
   AlertCircle,
   Loader2,
   Tv,
+  Maximize2,
+  X,
+  ArrowUpDown,
 } from 'lucide-react';
 import { Station } from '../../types';
 import { usePlayer } from '../../context/PlayerContext';
@@ -29,7 +32,15 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
   className = '',
   autoPlay = false,
 }) => {
-  const { playTv, pauseTv, isTvPlaying, isTvMuted, toggleTvMute, setTvMuted } = usePlayer();
+  const {
+    playTv,
+    pauseTv,
+    isTvPlaying,
+    isTvMuted,
+    toggleTvMute,
+    setTvMuted,
+    currentStation,
+  } = usePlayer();
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -43,6 +54,65 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [showControls, setShowControls] = useState<boolean>(true);
   const controlsTimeoutRef = useRef<any>(null);
+
+  // Sticky on scroll state
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [isSticky, setIsSticky] = useState<boolean>(false);
+  const [isStickyDismissed, setIsStickyDismissed] = useState<boolean>(false);
+  const [stickyPosition, setStickyPosition] = useState<'bottom-right' | 'top-right'>('bottom-right');
+  const [playerHeight, setPlayerHeight] = useState<number>(0);
+
+  // Monitor scroll to stick player when user scrolls past and TV is playing
+  useEffect(() => {
+    const handleScroll = () => {
+      const wrapper = wrapperRef.current;
+      if (!wrapper) return;
+
+      if (isFullscreen) {
+        if (isSticky) setIsSticky(false);
+        return;
+      }
+
+      const rect = wrapper.getBoundingClientRect();
+      // Scrolled past if bottom of original container is scrolled off the top viewport (header is ~68px)
+      const isScrolledPast = rect.bottom < 80;
+
+      if (isScrolledPast) {
+        if (isTvPlaying && !isStickyDismissed) {
+          if (!isSticky) {
+            setPlayerHeight(wrapper.offsetHeight || 380);
+            setIsSticky(true);
+          }
+        }
+      } else {
+        // Player is back in viewport
+        if (isSticky) {
+          setIsSticky(false);
+        }
+        if (isStickyDismissed) {
+          setIsStickyDismissed(false);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isTvPlaying, isSticky, isStickyDismissed, isFullscreen]);
+
+  // When TV is paused, un-stick to respect user action
+  useEffect(() => {
+    if (!isTvPlaying && isSticky) {
+      setIsSticky(false);
+    }
+  }, [isTvPlaying, isSticky]);
+
+  const scrollToMainPlayer = () => {
+    if (wrapperRef.current) {
+      wrapperRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
 
   // Sponsored Ad System
   // First ad after 1 minute (60s), then every 5 minutes (300s) thereafter for 10s countdown
@@ -320,54 +390,141 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
   };
 
   return (
-    <div
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => isTvPlaying && setShowControls(false)}
-      className={`relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl group select-none ${className}`}
-    >
-      <video
-        ref={videoRef}
-        playsInline
-        muted={isTvMuted}
-        onPlay={handlePlaying}
-        onPause={() => pauseTv()}
-        onWaiting={handleWaiting}
-        onPlaying={handlePlaying}
-        onCanPlay={() => {
-          if (bufferingTimerRef.current) clearTimeout(bufferingTimerRef.current);
-          setIsBuffering(false);
-          setIsLoading(false);
-        }}
-        className="w-full h-full object-contain cursor-pointer"
-        onClick={togglePlay}
-      />
-
-      {/* Top Banner (Station Name + Live Badge) */}
-      <div
-        className={`absolute top-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-b from-black/85 via-black/35 to-transparent flex items-center justify-between transition-opacity duration-300 pointer-events-none z-10 ${
-          showControls || !isTvPlaying ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        <div className="flex items-center gap-2.5">
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-600 text-white text-[11px] font-black tracking-wider uppercase shadow-md">
-            <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-            Live
-          </span>
-          <h3 className="text-white font-bold text-sm sm:text-base drop-shadow-md flex items-center gap-1.5">
-            <Tv className="w-4 h-4 text-rba-blue" />
-            {station.name}
-          </h3>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {station.frequency && (
-            <span className="hidden sm:inline-block px-2.5 py-0.5 rounded bg-white/20 text-white text-xs font-semibold backdrop-blur-sm">
-              {station.frequency}
+    <div ref={wrapperRef} className="relative w-full">
+      {/* Zero Layout Shift Placeholder when Sticky */}
+      {isSticky && (
+        <div
+          style={{ height: playerHeight > 0 ? `${playerHeight}px` : 'auto' }}
+          onClick={scrollToMainPlayer}
+          className="w-full aspect-video bg-slate-900/60 border-2 border-dashed border-white/20 rounded-2xl flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-slate-900/80 transition group"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-rba-blue/20 text-rba-blue flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+            <Tv className="w-6 h-6 animate-pulse" />
+          </div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+            <span className="text-white text-sm font-bold">
+              {station.name} is playing in Sticky Mode
             </span>
-          )}
+          </div>
+          <p className="text-xs text-slate-400 group-hover:text-amber-400 transition-colors flex items-center gap-1.5 mt-1">
+            <Maximize2 className="w-3.5 h-3.5" />
+            Click to scroll back to full broadcast
+          </p>
         </div>
-      </div>
+      )}
+
+      <div
+        ref={containerRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => isTvPlaying && setShowControls(false)}
+        className={
+          isSticky
+            ? `fixed z-50 transition-all duration-300 shadow-2xl rounded-2xl overflow-hidden border-2 border-rba-blue/80 bg-black ${
+                stickyPosition === 'bottom-right'
+                  ? `${currentStation ? 'bottom-20 sm:bottom-24' : 'bottom-6'} right-4 sm:right-6`
+                  : 'top-20 right-4 sm:right-6'
+              } w-[calc(100%-2rem)] max-w-[320px] sm:max-w-[380px] aspect-video group select-none animate-scaleUp`
+            : `relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl group select-none ${className}`
+        }
+      >
+        <video
+          ref={videoRef}
+          playsInline
+          muted={isTvMuted}
+          onPlay={handlePlaying}
+          onPause={() => pauseTv()}
+          onWaiting={handleWaiting}
+          onPlaying={handlePlaying}
+          onCanPlay={() => {
+            if (bufferingTimerRef.current) clearTimeout(bufferingTimerRef.current);
+            setIsBuffering(false);
+            setIsLoading(false);
+          }}
+          className="w-full h-full object-contain cursor-pointer"
+          onClick={togglePlay}
+        />
+
+        {/* Top Banner (Station Name + Live Badge or Sticky Header) */}
+        {isSticky ? (
+          <div className="absolute top-0 left-0 right-0 p-2 bg-slate-950/90 backdrop-blur-md flex items-center justify-between z-30 border-b border-white/10 text-white">
+            <div
+              className="flex items-center gap-1.5 min-w-0 cursor-pointer"
+              onClick={scrollToMainPlayer}
+              title="Click to scroll to full broadcast"
+            >
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping shrink-0" />
+              <span className="font-bold text-xs truncate flex items-center gap-1">
+                <Tv className="w-3 h-3 text-rba-blue shrink-0" />
+                {station.name}
+              </span>
+              <span className="text-[9px] px-1 py-0.2 rounded bg-red-600 text-white font-bold uppercase">
+                LIVE
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() =>
+                  setStickyPosition((prev) =>
+                    prev === 'bottom-right' ? 'top-right' : 'bottom-right'
+                  )
+                }
+                className="p-1 rounded-lg hover:bg-white/20 text-slate-300 hover:text-white transition"
+                title={`Dock to ${stickyPosition === 'bottom-right' ? 'top' : 'bottom'}`}
+              >
+                <ArrowUpDown className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={scrollToMainPlayer}
+                className="p-1 rounded-lg hover:bg-white/20 text-slate-300 hover:text-white transition"
+                title="Scroll to full broadcast"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsStickyDismissed(true);
+                  setIsSticky(false);
+                }}
+                className="p-1 rounded-lg hover:bg-red-600/80 text-slate-300 hover:text-white transition"
+                title="Dismiss sticky player"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div
+            className={`absolute top-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-b from-black/85 via-black/35 to-transparent flex items-center justify-between transition-opacity duration-300 pointer-events-none z-10 ${
+              showControls || !isTvPlaying ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-600 text-white text-[11px] font-black tracking-wider uppercase shadow-md">
+                <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                Live
+              </span>
+              <h3 className="text-white font-bold text-sm sm:text-base drop-shadow-md flex items-center gap-1.5">
+                <Tv className="w-4 h-4 text-rba-blue" />
+                {station.name}
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {station.frequency && (
+                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded bg-white/20 text-white text-xs font-semibold backdrop-blur-sm">
+                  {station.frequency}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
       {/* Loading Overlay (Initial Load) */}
       {isLoading && !error && (
@@ -488,6 +645,7 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };
