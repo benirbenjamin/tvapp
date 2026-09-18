@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useSettings } from '../../context/SettingsContext';
 
 interface SEOProps {
   title?: string;
@@ -10,32 +11,89 @@ interface SEOProps {
 
 export const SEO: React.FC<SEOProps> = ({
   title,
-  description = "Watch RTV Live and listen to Radio Rwanda, Magic FM, and all regional community stations live from Rwanda Broadcasting Agency (RBA).",
-  canonical = "https://rba.benix.space",
-  ogImage = "/logo.png",
-  ogType = "website",
+  description,
+  canonical,
+  ogImage,
+  ogType = 'website',
 }) => {
-  const fullTitle = title ? `${title} | RBA Rwanda` : 'RTV Rwanda Live | Rwanda Broadcasting Agency';
+  const { settings } = useSettings();
+
+  const siteName = settings.site_name || 'Rwanda Broadcasting Agency (RBA)';
+  const defaultDesc =
+    settings.site_description ||
+    'Watch RTV Live, KC2, and listen to Radio Rwanda and regional community stations online on Rwanda Broadcasting Agency.';
+  const effectiveDescription = description || defaultDesc;
+  const effectiveOgImage = ogImage || settings.logo_url || '/logo.png';
+  const effectiveCanonical = canonical || `https://tv.benix.space${window.location.pathname}`;
+
+  const fullTitle = title ? `${title} | ${siteName}` : `${siteName} | Live Streaming`;
 
   useEffect(() => {
+    // 1. Page Title
     document.title = fullTitle;
 
-    // Update Meta Description
+    // 2. Meta Description
     let metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-      metaDesc.setAttribute('content', description);
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
     }
+    metaDesc.setAttribute('content', effectiveDescription);
 
-    // Update OpenGraph
+    // 3. OpenGraph Title
     let ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute('content', fullTitle);
+    if (!ogTitle) {
+      ogTitle = document.createElement('meta');
+      ogTitle.setAttribute('property', 'og:title');
+      document.head.appendChild(ogTitle);
+    }
+    ogTitle.setAttribute('content', fullTitle);
 
+    // 4. OpenGraph Description
     let ogDesc = document.querySelector('meta[property="og:description"]');
-    if (ogDesc) ogDesc.setAttribute('content', description);
+    if (!ogDesc) {
+      ogDesc = document.createElement('meta');
+      ogDesc.setAttribute('property', 'og:description');
+      document.head.appendChild(ogDesc);
+    }
+    ogDesc.setAttribute('content', effectiveDescription);
 
+    // 5. OpenGraph Image
     let ogImg = document.querySelector('meta[property="og:image"]');
-    if (ogImg) ogImg.setAttribute('content', ogImage);
-  }, [fullTitle, description, ogImage]);
+    if (!ogImg) {
+      ogImg = document.createElement('meta');
+      ogImg.setAttribute('property', 'og:image');
+      document.head.appendChild(ogImg);
+    }
+    ogImg.setAttribute('content', effectiveOgImage);
+
+    // 6. OpenGraph URL
+    let ogUrl = document.querySelector('meta[property="og:url"]');
+    if (!ogUrl) {
+      ogUrl = document.createElement('meta');
+      ogUrl.setAttribute('property', 'og:url');
+      document.head.appendChild(ogUrl);
+    }
+    ogUrl.setAttribute('content', effectiveCanonical);
+
+    // 7. Canonical Tag
+    let canonicalTag = document.querySelector('link[rel="canonical"]');
+    if (!canonicalTag) {
+      canonicalTag = document.createElement('link');
+      canonicalTag.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalTag);
+    }
+    canonicalTag.setAttribute('href', effectiveCanonical);
+
+    // 8. Dynamic Favicon (if custom logo provided)
+    if (settings.logo_url) {
+      let iconLink = document.querySelector('link[rel="icon"]');
+      if (iconLink) {
+        iconLink.setAttribute('href', settings.logo_url);
+      }
+    }
+  }, [fullTitle, effectiveDescription, effectiveOgImage, effectiveCanonical, settings.logo_url]);
 
   return null;
 };

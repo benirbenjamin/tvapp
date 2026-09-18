@@ -5,6 +5,8 @@ import { getStations, getVideos, getCategories } from '../services/api';
 import { LiveTVPlayer } from '../components/player/LiveTVPlayer';
 import { VideoCard } from '../components/video/VideoCard';
 import { SEO } from '../components/common/SEO';
+import { AdSenseBanner } from '../components/ads/AdSenseBanner';
+import { ADS_CONFIG } from '../config/ads';
 
 export const TVPage: React.FC = () => {
   const [tvStations, setTvStations] = useState<Station[]>([]);
@@ -110,6 +112,17 @@ export const TVPage: React.FC = () => {
                 Loading RTV Live broadcast...
               </div>
             )}
+
+            {/* Live TV Companion Ad Banner (Auto-refreshes periodically without interrupting playback) */}
+            <div className="mt-6">
+              <AdSenseBanner
+                slot={ADS_CONFIG.SLOTS.TV_COMPANION_BANNER}
+                format="horizontal"
+                responsive={true}
+                refreshInterval={ADS_CONFIG.TV_BANNER_REFRESH_SECONDS}
+                label="Live TV Broadcast Sponsor"
+              />
+            </div>
           </div>
 
         </div>
@@ -187,6 +200,17 @@ export const TVPage: React.FC = () => {
             ))}
           </div>
         )}
+
+        {/* Video Catalog Sponsored Ad Banner */}
+        <div className="pt-4">
+          <AdSenseBanner
+            slot={ADS_CONFIG.SLOTS.IN_FEED_BANNER}
+            format="horizontal"
+            responsive={true}
+            refreshInterval={ADS_CONFIG.TV_BANNER_REFRESH_SECONDS}
+            label="Sponsored Partner"
+          />
+        </div>
 
       </div>
     </div>

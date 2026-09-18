@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/*
 
-Sitemap: https://rba.benix.space/sitemap.xml
+Sitemap: https://tv.benix.space/sitemap.xml
+Host: https://tv.benix.space

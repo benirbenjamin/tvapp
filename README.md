@@ -8,7 +8,7 @@ A modern, production-ready streaming web application for **Rwanda Broadcasting A
 - **Administrative Control Panel** with Role-Based Access Control (`SUPER_ADMIN` and `ADMIN`) for station management, YouTube video embedding, stream diagnostics, user management, and system settings.
 - **Zero-Setup Database Architecture**: No local database installation required. Configured for cloud PostgreSQL (Neon, Supabase, Vercel Postgres, Railway) with automated schema migrations and seeding on boot/first request.
 
-**Official Application URL**: `https://rba.benix.space`
+**Official Application URL**: `https://tv.benix.space`
 
 ---
 

@@ -8,6 +8,8 @@ import { StationCard } from '../components/radio/StationCard';
 import { VideoCard } from '../components/video/VideoCard';
 import { SEO } from '../components/common/SEO';
 import { Link } from 'react-router-dom';
+import { AdSenseBanner } from '../components/ads/AdSenseBanner';
+import { ADS_CONFIG } from '../config/ads';
 
 export const Home: React.FC = () => {
   const [stations, setStations] = useState<Station[]>([]);
@@ -94,7 +96,7 @@ export const Home: React.FC = () => {
           {/* Hero Player & Right Live Schedule / Highlights */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Live TV Player Container */}
-            <div className="lg:col-span-8 xl:col-span-9">
+            <div className="lg:col-span-8 xl:col-span-9 space-y-4">
               {selectedTvStation ? (
                 <LiveTVPlayer station={selectedTvStation} autoPlay={false} />
               ) : (
@@ -102,6 +104,15 @@ export const Home: React.FC = () => {
                   Loading Live TV Stream...
                 </div>
               )}
+
+              {/* TV Companion Ad Banner (Auto-refreshes periodically without interrupting playback) */}
+              <AdSenseBanner
+                slot={ADS_CONFIG.SLOTS.TV_COMPANION_BANNER}
+                format="horizontal"
+                responsive={true}
+                refreshInterval={ADS_CONFIG.TV_BANNER_REFRESH_SECONDS}
+                label="Broadcast Sponsored Partner"
+              />
             </div>
 
             {/* Sidebar Highlights */}

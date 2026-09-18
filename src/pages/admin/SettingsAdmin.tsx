@@ -1,42 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Settings, Save, CheckCircle2, AlertCircle, Globe, Mail, Phone, MapPin } from 'lucide-react';
 import { SiteSettings } from '../../types';
-import { getSettings, updateSettings } from '../../services/api';
+import { useSettings } from '../../context/SettingsContext';
 import { AdminLayout } from '../../components/layout/AdminLayout';
 
 export const SettingsAdminPage: React.FC = () => {
-  const [settings, setSettings] = useState<SiteSettings>({
-    site_name: 'Rwanda Broadcasting Agency (RBA)',
-    site_description: "Rwanda's leading public service multimedia broadcaster. Stream RTV Live, KC2, and Radio Rwanda online anywhere.",
-    logo_url: '/logo.png',
-    contact_email: 'info@rba.co.rw',
-    contact_phone: '+250 252 576 540',
-    address: 'KG 7 Ave, Kacyiru, P.O. Box 83 Kigali - Rwanda',
-    facebook_url: 'https://facebook.com/rba.rwanda',
-    twitter_url: 'https://twitter.com/RBA_Rwanda',
-    youtube_url: 'https://youtube.com/c/RwandaBroadcastingAgency',
-    instagram_url: 'https://instagram.com/rba.rwanda',
-    footer_text: '© ' + new Date().getFullYear() + ' Rwanda Broadcasting Agency (RBA). All rights reserved.',
-  });
-  const [loading, setLoading] = useState(true);
+  const { settings: globalSettings, updateSettings: saveSettings, isLoading } = useSettings();
+  const [settings, setSettings] = useState<SiteSettings>(globalSettings);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchSettingsData = async () => {
-      try {
-        const data = await getSettings();
-        if (data) setSettings(data);
-      } catch (err) {
-        console.error('Failed to load settings:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSettingsData();
-  }, []);
+    if (globalSettings) {
+      setSettings(globalSettings);
+    }
+  }, [globalSettings]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +24,7 @@ export const SettingsAdminPage: React.FC = () => {
     setSuccess(false);
 
     try {
-      await updateSettings(settings);
+      await saveSettings(settings);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
@@ -106,12 +85,25 @@ export const SettingsAdminPage: React.FC = () => {
 
               <div>
                 <label className="font-bold text-slate-700 block mb-1">Logo Asset Path / URL</label>
-                <input
-                  type="text"
-                  value={settings.logo_url}
-                  onChange={(e) => setSettings({ ...settings, logo_url: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rba-blue focus:bg-white"
-                />
+                <div className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={settings.logo_url}
+                    onChange={(e) => setSettings({ ...settings, logo_url: e.target.value })}
+                    placeholder="/logo.png or https://..."
+                    className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rba-blue focus:bg-white"
+                  />
+                  <div className="w-14 h-11 rounded-xl bg-slate-900 border border-slate-200 p-1.5 flex items-center justify-center shrink-0" title="Logo Preview">
+                    <img
+                      src={settings.logo_url || '/logo.png'}
+                      alt="Preview"
+                      className="max-h-full max-w-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/logo.png';
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

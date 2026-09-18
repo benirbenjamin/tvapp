@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { usePlayer } from '../../context/PlayerContext';
+import { useSettings } from '../../context/SettingsContext';
 
 export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -20,6 +21,7 @@ export const Header: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
   const { currentStation, isPlaying } = usePlayer();
+  const { settings } = useSettings();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,9 +87,12 @@ export const Header: React.FC = () => {
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-3 shrink-0 group">
           <img
-            src="/logo.png"
-            alt="Rwanda Broadcasting Agency (RBA)"
+            src={settings.logo_url || '/logo.png'}
+            alt={settings.site_name || 'Rwanda Broadcasting Agency (RBA)'}
             className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/logo.png';
+            }}
           />
         </Link>
 

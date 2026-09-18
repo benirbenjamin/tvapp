@@ -1,0 +1,25 @@
+/**
+ * Google AdSense Configuration for Rwanda Broadcasting Agency (RBA)
+ */
+
+export const ADS_CONFIG = {
+  // Google AdSense Publisher ID
+  CLIENT_ID: 'ca-pub-4078466828008985',
+
+  // Periodic TV Companion Ad Refresh interval (in seconds): 2.5 minutes (150s)
+  // Re-fetches a fresh ad without interrupting video/audio playback
+  TV_BANNER_REFRESH_SECONDS: 150,
+
+  // Interval for displaying the interstitial ad popup while watching TV (15 minutes)
+  POPUP_INTERVAL_SECONDS: 15 * 60, // 900 seconds
+
+  // Required watch time before user can close the popup ad (10 seconds)
+  POPUP_COUNTDOWN_SECONDS: 10,
+
+  // Ad slot IDs (Optional customizable slot IDs)
+  SLOTS: {
+    TV_COMPANION_BANNER: '1234567890',
+    POPUP_INTERSTITIAL: '2345678901',
+    IN_FEED_BANNER: '3456789012',
+  },
+} as const;

@@ -11,8 +11,10 @@ import settingsRoutes from './routes/settings.js';
 
 const app = express();
 
-// CORS configuration supporting rba.benix.space and local dev
+// CORS configuration supporting tv.benix.space and local dev
 const allowedOrigins = [
+  'https://tv.benix.space',
+  'http://tv.benix.space',
   'https://rba.benix.space',
   'http://rba.benix.space',
   'https://rba.co.rw',
@@ -54,7 +56,7 @@ app.get('/api/health', async (_req: Request, res: Response) => {
   res.json({
     status: 'ok',
     service: 'RBA Streaming Platform API',
-    domain: 'rba.benix.space',
+    domain: 'tv.benix.space',
     timestamp: new Date().toISOString(),
   });
 });

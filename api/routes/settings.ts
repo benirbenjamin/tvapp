@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { query } from '../db/pool.js';
-import { AuthenticatedRequest, requireSuperAdmin } from '../middleware/auth.js';
+import { AuthenticatedRequest, requireAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -31,8 +31,8 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
   }
 });
 
-// PUT /api/settings (Super Admin only)
-router.put('/', requireSuperAdmin, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+// PUT /api/settings (Admin and Super Admin)
+router.put('/', requireAdmin, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const newSettings = req.body;
     await query(

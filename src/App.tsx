@@ -2,12 +2,15 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PlayerProvider } from './context/PlayerContext';
+import { AdProvider, useAds } from './context/AdContext';
+import { SettingsProvider } from './context/SettingsContext';
 import { AnalyticsProvider } from './context/AnalyticsContext';
 
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { GlobalRadioPlayer } from './components/player/GlobalRadioPlayer';
 import { FloatingPipTV } from './components/player/FloatingPipTV';
+import { AdPopupModal } from './components/ads/AdPopupModal';
 
 // Pages
 import { Home } from './pages/Home';
@@ -79,100 +82,113 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   );
 };
 
+// Global Ad Popup Component attached to AdContext
+const GlobalAdPopup: React.FC = () => {
+  const { isPopupOpen, closePopup } = useAds();
+  return <AdPopupModal isOpen={isPopupOpen} onClose={closePopup} />;
+};
+
 export const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
         <PlayerProvider>
-          <AnalyticsProvider>
-            <div className="relative min-h-screen flex flex-col">
-              <Routes>
-                {/* Public Website Routes */}
-                <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
-                <Route path="/radio" element={<PublicLayout><RadioPage /></PublicLayout>} />
-                <Route path="/radio/:slug" element={<PublicLayout><StationDetailPage /></PublicLayout>} />
-                <Route path="/tv" element={<PublicLayout><TVPage /></PublicLayout>} />
-                <Route path="/tv/:id" element={<PublicLayout><VideoDetailPage /></PublicLayout>} />
-                <Route path="/search" element={<PublicLayout><SearchPage /></PublicLayout>} />
-                <Route path="/about" element={<PublicLayout><AboutPage /></PublicLayout>} />
-                <Route path="/contact" element={<PublicLayout><ContactPage /></PublicLayout>} />
-                <Route path="/privacy" element={<PublicLayout><PrivacyPage /></PublicLayout>} />
+          <SettingsProvider>
+            <AdProvider>
+              <AnalyticsProvider>
+              <div className="relative min-h-screen flex flex-col">
+                <Routes>
+                  {/* Public Website Routes */}
+                  <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+                  <Route path="/radio" element={<PublicLayout><RadioPage /></PublicLayout>} />
+                  <Route path="/radio/:slug" element={<PublicLayout><StationDetailPage /></PublicLayout>} />
+                  <Route path="/tv" element={<PublicLayout><TVPage /></PublicLayout>} />
+                  <Route path="/tv/:id" element={<PublicLayout><VideoDetailPage /></PublicLayout>} />
+                  <Route path="/search" element={<PublicLayout><SearchPage /></PublicLayout>} />
+                  <Route path="/about" element={<PublicLayout><AboutPage /></PublicLayout>} />
+                  <Route path="/contact" element={<PublicLayout><ContactPage /></PublicLayout>} />
+                  <Route path="/privacy" element={<PublicLayout><PrivacyPage /></PublicLayout>} />
 
-                {/* Admin Auth Route */}
-                <Route path="/admin/login" element={<AdminLoginPage />} />
+                  {/* Admin Auth Route */}
+                  <Route path="/admin/login" element={<AdminLoginPage />} />
 
-                {/* Protected Admin Routes */}
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedAdminRoute>
-                      <DashboardPage />
-                    </ProtectedAdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/stations"
-                  element={
-                    <ProtectedAdminRoute>
-                      <StationsAdminPage />
-                    </ProtectedAdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/videos"
-                  element={
-                    <ProtectedAdminRoute>
-                      <VideosAdminPage />
-                    </ProtectedAdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/analytics"
-                  element={
-                    <ProtectedAdminRoute>
-                      <AnalyticsAdminPage />
-                    </ProtectedAdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/users"
-                  element={
-                    <ProtectedSuperAdminRoute>
-                      <UsersAdminPage />
-                    </ProtectedSuperAdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/settings"
-                  element={
-                    <ProtectedAdminRoute>
-                      <SettingsAdminPage />
-                    </ProtectedAdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/profile"
-                  element={
-                    <ProtectedAdminRoute>
-                      <ProfileAdminPage />
-                    </ProtectedAdminRoute>
-                  }
-                />
+                  {/* Protected Admin Routes */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedAdminRoute>
+                        <DashboardPage />
+                      </ProtectedAdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/stations"
+                    element={
+                      <ProtectedAdminRoute>
+                        <StationsAdminPage />
+                      </ProtectedAdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/videos"
+                    element={
+                      <ProtectedAdminRoute>
+                        <VideosAdminPage />
+                      </ProtectedAdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/analytics"
+                    element={
+                      <ProtectedAdminRoute>
+                        <AnalyticsAdminPage />
+                      </ProtectedAdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/users"
+                    element={
+                      <ProtectedSuperAdminRoute>
+                        <UsersAdminPage />
+                      </ProtectedSuperAdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/settings"
+                    element={
+                      <ProtectedAdminRoute>
+                        <SettingsAdminPage />
+                      </ProtectedAdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/profile"
+                    element={
+                      <ProtectedAdminRoute>
+                        <ProfileAdminPage />
+                      </ProtectedAdminRoute>
+                    }
+                  />
 
-                {/* 404 Route */}
-                <Route path="*" element={<PublicLayout><NotFoundPage /></PublicLayout>} />
-              </Routes>
+                  {/* 404 Route */}
+                  <Route path="*" element={<PublicLayout><NotFoundPage /></PublicLayout>} />
+                </Routes>
 
-              {/* Picture-in-Picture TV Player for Seamless Background Viewing */}
-              <FloatingPipTV />
+                {/* Picture-in-Picture TV Player for Seamless Background Viewing */}
+                <FloatingPipTV />
 
-              {/* Persistent Global Radio Player */}
-              <GlobalRadioPlayer />
-            </div>
-          </AnalyticsProvider>
-        </PlayerProvider>
-      </AuthProvider>
-    </Router>
+                {/* Persistent Global Radio Player */}
+                <GlobalRadioPlayer />
+
+                {/* Global Interstitial Ad Popup (Every 15 min with 10s countdown) */}
+                <GlobalAdPopup />
+              </div>
+            </AnalyticsProvider>
+          </AdProvider>
+        </SettingsProvider>
+      </PlayerProvider>
+    </AuthProvider>
+  </Router>
   );
 };
 

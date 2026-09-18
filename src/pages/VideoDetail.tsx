@@ -15,6 +15,8 @@ import { getVideoDetail, trackEvent } from '../services/api';
 import { VideoPlayer } from '../components/player/VideoPlayer';
 import { VideoCard } from '../components/video/VideoCard';
 import { SEO } from '../components/common/SEO';
+import { AdSenseBanner } from '../components/ads/AdSenseBanner';
+import { ADS_CONFIG } from '../config/ads';
 
 export const VideoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -154,6 +156,17 @@ export const VideoDetailPage: React.FC = () => {
             )}
           </div>
 
+        </div>
+
+        {/* Video Watch Companion Ad Banner (Auto-refreshes periodically without interrupting video) */}
+        <div className="max-w-5xl mx-auto">
+          <AdSenseBanner
+            slot={ADS_CONFIG.SLOTS.TV_COMPANION_BANNER}
+            format="horizontal"
+            responsive={true}
+            refreshInterval={ADS_CONFIG.TV_BANNER_REFRESH_SECONDS}
+            label="Video Broadcast Sponsor"
+          />
         </div>
 
         {/* Related & More Videos */}

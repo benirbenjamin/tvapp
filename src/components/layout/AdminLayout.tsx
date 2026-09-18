@@ -17,12 +17,14 @@ import {
   Key,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 
 export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isSuperAdmin, logout } = useAuth();
+  const { settings } = useSettings();
 
   const handleLogout = () => {
     logout();
@@ -50,7 +52,14 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
       {/* Mobile Top Bar */}
       <div className="md:hidden bg-rba-navy text-white px-4 py-3 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="RBA" className="h-8 w-auto" />
+          <img
+            src={settings.logo_url || '/logo.png'}
+            alt="Logo"
+            className="h-8 w-auto object-contain"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/logo.png';
+            }}
+          />
           <span className="font-bold text-sm text-rba-yellow">Admin Portal</span>
         </div>
         <button
@@ -70,7 +79,14 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         <div>
           {/* Logo Brand Header */}
           <div className="pb-6 mb-6 border-b border-white/10 flex items-center gap-3">
-            <img src="/logo.png" alt="RBA" className="h-10 w-auto" />
+            <img
+              src={settings.logo_url || '/logo.png'}
+              alt="Logo"
+              className="h-10 w-auto object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/logo.png';
+              }}
+            />
             <div>
               <h2 className="font-extrabold text-sm text-white tracking-wide">RBA Control</h2>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rba-blue/30 text-rba-blueLight border border-rba-blue/40 uppercase">

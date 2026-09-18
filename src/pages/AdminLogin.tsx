@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Shield, Lock, Mail, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 import { SEO } from '../components/common/SEO';
 
 export const AdminLoginPage: React.FC = () => {
+  const { settings } = useSettings();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -57,11 +59,14 @@ export const AdminLoginPage: React.FC = () => {
 
         <div className="text-center mb-8">
           <img
-            src="/logo.png"
-            alt="RBA"
+            src={settings.logo_url || '/logo.png'}
+            alt={settings.site_name || 'RBA'}
             className="h-14 w-auto mx-auto object-contain mb-3 drop-shadow"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/logo.png';
+            }}
           />
-          <h2 className="text-2xl font-black text-white tracking-tight">RBA Admin Portal</h2>
+          <h2 className="text-2xl font-black text-white tracking-tight">{settings.site_name || 'RBA'} Admin Portal</h2>
           <p className="text-xs text-slate-400 mt-1">
             Authorized management access for broadcast engineers and content editors
           </p>

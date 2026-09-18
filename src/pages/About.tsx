@@ -1,13 +1,15 @@
 import React from 'react';
 import { Radio, Tv, Globe, Shield, Award, Users, MapPin, CheckCircle2 } from 'lucide-react';
 import { SEO } from '../components/common/SEO';
+import { useSettings } from '../context/SettingsContext';
 
 export const AboutPage: React.FC = () => {
+  const { settings } = useSettings();
   return (
     <div className="min-h-screen bg-rba-grayBg pb-20">
       <SEO
-        title="About Rwanda Broadcasting Agency (RBA)"
-        description="Learn about the history, mandate, and nationwide broadcast reach of Rwanda Broadcasting Agency (RBA), RTV, and Radio Rwanda."
+        title={`About ${settings.site_name || 'Rwanda Broadcasting Agency (RBA)'}`}
+        description={settings.site_description || "Learn about the history, mandate, and nationwide broadcast reach of Rwanda Broadcasting Agency (RBA), RTV, and Radio Rwanda."}
       />
 
       {/* Hero Header */}
@@ -17,7 +19,7 @@ export const AboutPage: React.FC = () => {
             Hafi Yawe • Close To You
           </span>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight mb-4">
-            About Rwanda Broadcasting Agency
+            About {settings.site_name || 'Rwanda Broadcasting Agency'}
           </h1>
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
             The national public service multimedia broadcaster dedicated to educating, informing, and entertaining the citizens of Rwanda and audiences worldwide.
