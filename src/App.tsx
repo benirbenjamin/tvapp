@@ -32,6 +32,7 @@ import { AnalyticsAdminPage } from './pages/admin/AnalyticsAdmin';
 import { UsersAdminPage } from './pages/admin/UsersAdmin';
 import { SettingsAdminPage } from './pages/admin/SettingsAdmin';
 import { ProfileAdminPage } from './pages/admin/ProfileAdmin';
+import { CommentsModerationAdminPage } from './pages/admin/CommentsModerationAdmin';
 import { NotFoundPage } from './pages/NotFound';
 
 // Protected Route Helpers
@@ -134,6 +135,14 @@ export const App: React.FC = () => {
                     element={
                       <ProtectedAdminRoute>
                         <VideosAdminPage />
+                      </ProtectedAdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/moderation"
+                    element={
+                      <ProtectedAdminRoute>
+                        <CommentsModerationAdminPage />
                       </ProtectedAdminRoute>
                     }
                   />

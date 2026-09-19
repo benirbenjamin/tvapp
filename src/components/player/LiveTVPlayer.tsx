@@ -354,14 +354,122 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
     toggleTvMute();
   };
 
-  const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch(() => {});
-      setIsFullscreen(true);
+  // Fullscreen change listener and screen orientation lock/unlock handling
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isCurrentlyFs = !!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement
+      );
+
+      setIsFullscreen(isCurrentlyFs);
+
+      if (!isCurrentlyFs) {
+        // Unlock orientation back to normal when exiting fullscreen
+        try {
+          if (screen.orientation && typeof (screen.orientation as any).unlock === 'function') {
+            (screen.orientation as any).unlock();
+          } else if ((screen as any).unlockOrientation) {
+            (screen as any).unlockOrientation();
+          }
+        } catch (e) {
+          // Ignore
+        }
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+      try {
+        if (screen.orientation && typeof (screen.orientation as any).unlock === 'function') {
+          (screen.orientation as any).unlock();
+        }
+      } catch (e) {}
+    };
+  }, []);
+
+  const toggleFullscreen = async () => {
+    const container = containerRef.current;
+    const video = videoRef.current;
+    if (!container) return;
+
+    const isCurrentlyFs = !!(
+      document.fullscreenElement ||
+      (document as any).webkitFullscreenElement ||
+      (document as any).mozFullScreenElement ||
+      (document as any).msFullscreenElement
+    );
+
+    if (!isCurrentlyFs) {
+      try {
+        if (container.requestFullscreen) {
+          await container.requestFullscreen();
+        } else if ((container as any).webkitRequestFullscreen) {
+          await (container as any).webkitRequestFullscreen();
+        } else if ((container as any).mozRequestFullScreen) {
+          await (container as any).mozRequestFullScreen();
+        } else if ((container as any).msRequestFullscreen) {
+          await (container as any).msRequestFullscreen();
+        } else if (video && (video as any).webkitEnterFullscreen) {
+          // iOS Safari native video fullscreen
+          (video as any).webkitEnterFullscreen();
+          return;
+        }
+
+        setIsFullscreen(true);
+
+        // Lock to landscape mode on mobile devices
+        try {
+          if (screen.orientation && typeof (screen.orientation as any).lock === 'function') {
+            await (screen.orientation as any).lock('landscape');
+          } else if ((screen as any).lockOrientation) {
+            (screen as any).lockOrientation('landscape');
+          } else if ((screen as any).mozLockOrientation) {
+            (screen as any).mozLockOrientation('landscape');
+          } else if ((screen as any).msLockOrientation) {
+            (screen as any).msLockOrientation('landscape');
+          }
+        } catch (err) {
+          // Expected on desktop or unsupported devices - safe fallback
+          console.log('Orientation lock to landscape skipped/unsupported:', err);
+        }
+      } catch (err) {
+        console.warn('Error entering fullscreen:', err);
+      }
     } else {
-      document.exitFullscreen().catch(() => {});
-      setIsFullscreen(false);
+      try {
+        // Unlock orientation
+        try {
+          if (screen.orientation && typeof (screen.orientation as any).unlock === 'function') {
+            (screen.orientation as any).unlock();
+          } else if ((screen as any).unlockOrientation) {
+            (screen as any).unlockOrientation();
+          }
+        } catch (e) {}
+
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        } else if ((document as any).mozCancelFullScreen) {
+          await (document as any).mozCancelFullScreen();
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen();
+        }
+        setIsFullscreen(false);
+      } catch (err) {
+        console.warn('Error exiting fullscreen:', err);
+      }
     }
   };
 
@@ -419,7 +527,9 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
         onMouseMove={handleMouseMove}
         onMouseLeave={() => isTvPlaying && setShowControls(false)}
         className={
-          isSticky
+          isFullscreen
+            ? 'w-full h-full bg-black flex items-center justify-center select-none relative overflow-hidden'
+            : isSticky
             ? `fixed z-50 transition-all duration-300 shadow-2xl rounded-2xl overflow-hidden border-2 border-rba-blue/80 bg-black ${
                 stickyPosition === 'bottom-right'
                   ? `${currentStation ? 'bottom-20 sm:bottom-24' : 'bottom-6'} right-4 sm:right-6`

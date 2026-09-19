@@ -13,8 +13,11 @@ import {
   ChevronDown,
   History,
   X,
+  AlertTriangle,
+  ShieldAlert,
 } from 'lucide-react';
 import { Station, Comment } from '../../types';
+import { checkInappropriateLanguage } from '../../utils/moderation';
 
 interface TVLiveChatProps {
   station: Station;
@@ -94,6 +97,22 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
   });
   const [isNameModalOpen, setIsNameModalOpen] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  const [nameError, setNameError] = useState<string | null>(null);
+
+  // Visitor persistent fingerprint
+  const [visitorFingerprint] = useState<string>(() => {
+    let fp = localStorage.getItem('benix_visitor_fp');
+    if (!fp) {
+      fp = 'fp_' + Math.random().toString(36).substring(2, 12) + Date.now().toString(36);
+      localStorage.setItem('benix_visitor_fp', fp);
+    }
+    return fp;
+  });
+
+  // Ban & Moderation feedback states
+  const [isBanned, setIsBanned] = useState<boolean>(false);
+  const [banReason, setBanReason] = useState<string>('');
+  const [commentError, setCommentError] = useState<string | null>(null);
 
   // Comment inputs
   const [mainCommentText, setMainCommentText] = useState('');
@@ -237,6 +256,16 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
     const cleanName = nameInput.trim();
     if (!cleanName) return;
 
+    // Check name against multilingual moderation
+    const nameCheck = checkInappropriateLanguage(cleanName);
+    if (nameCheck.isInappropriate) {
+      setNameError(
+        `The name contains inappropriate or offensive words (${nameCheck.category || 'Moderation'}). Vulgar names (e.g. in Kinyarwanda, English, French) are not allowed. Please choose a respectful nickname.`
+      );
+      return;
+    }
+
+    setNameError(null);
     localStorage.setItem('benix_chat_username', cleanName);
     setUserName(cleanName);
     setIsNameModalOpen(false);
@@ -256,8 +285,24 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
   // 4. Post top-level comment
   const handleMainCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isBanned) {
+      setCommentError('You are restricted from posting comments.');
+      return;
+    }
+
     const text = mainCommentText.trim();
     if (!text) return;
+
+    // Moderation check
+    const contentCheck = checkInappropriateLanguage(text);
+    if (contentCheck.isInappropriate) {
+      setCommentError(
+        `Comment contains inappropriate language (${contentCheck.category || 'Moderation'}). Vulgar or abusive comments are prohibited.`
+      );
+      return;
+    }
+
+    setCommentError(null);
 
     if (!ensureNickname({ type: 'comment', text })) {
       return;
@@ -267,7 +312,9 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
   };
 
   const postCommentDirectly = async (author: string, content: string) => {
+    if (isBanned) return;
     setSubmitting(true);
+    setCommentError(null);
     const tempId = 'temp-' + Date.now();
     const optimisticComment: Comment = {
       id: tempId,
@@ -297,18 +344,32 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
           station_id: station.id,
           author_name: author,
           content: content,
+          author_fingerprint: visitorFingerprint,
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        const serverComment = data.comment;
-        setComments((prev) => {
-          const next = prev.map((c) => (c.id === tempId ? serverComment : c));
-          saveToLocalCache(next);
-          return next;
-        });
+      if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        setIsBanned(true);
+        setBanReason(data.reason || data.error || 'Restricted from posting comments.');
+        setComments((prev) => prev.filter((c) => c.id !== tempId));
+        return;
       }
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setCommentError(data.error || 'Failed to post comment.');
+        setComments((prev) => prev.filter((c) => c.id !== tempId));
+        return;
+      }
+
+      const data = await res.json();
+      const serverComment = data.comment;
+      setComments((prev) => {
+        const next = prev.map((c) => (c.id === tempId ? serverComment : c));
+        saveToLocalCache(next);
+        return next;
+      });
     } catch (err) {
       console.warn('Offline fallback for new comment');
     } finally {
@@ -319,8 +380,23 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
   // 5. Post reply to an existing comment
   const handleReplySubmit = (parentId: string, e: React.FormEvent) => {
     e.preventDefault();
+    if (isBanned) {
+      setCommentError('You are restricted from posting comments.');
+      return;
+    }
+
     const text = replyText.trim();
     if (!text) return;
+
+    const contentCheck = checkInappropriateLanguage(text);
+    if (contentCheck.isInappropriate) {
+      setCommentError(
+        `Reply contains inappropriate language (${contentCheck.category || 'Moderation'}). Vulgar or abusive comments are prohibited.`
+      );
+      return;
+    }
+
+    setCommentError(null);
 
     if (!ensureNickname({ type: 'reply', parentId, text })) {
       return;
@@ -330,7 +406,9 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
   };
 
   const postReplyDirectly = async (author: string, parentId: string, content: string) => {
+    if (isBanned) return;
     setSubmitting(true);
+    setCommentError(null);
     const tempId = 'temp-reply-' + Date.now();
     const optimisticReply: Comment = {
       id: tempId,
@@ -371,26 +449,52 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
           parent_id: parentId,
           author_name: author,
           content: content,
+          author_fingerprint: visitorFingerprint,
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        const serverReply = data.comment;
-        setComments((prev) => {
-          const next = prev.map((c) => {
-            if (c.id === parentId) {
-              return {
-                ...c,
-                replies: (c.replies || []).map((r) => (r.id === tempId ? serverReply : r)),
-              };
-            }
-            return c;
-          });
-          saveToLocalCache(next);
-          return next;
-        });
+      if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        setIsBanned(true);
+        setBanReason(data.reason || data.error || 'Restricted from posting comments.');
+        setComments((prev) =>
+          prev.map((c) =>
+            c.id === parentId
+              ? { ...c, replies: (c.replies || []).filter((r) => r.id !== tempId) }
+              : c
+          )
+        );
+        return;
       }
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setCommentError(data.error || 'Failed to post reply.');
+        setComments((prev) =>
+          prev.map((c) =>
+            c.id === parentId
+              ? { ...c, replies: (c.replies || []).filter((r) => r.id !== tempId) }
+              : c
+          )
+        );
+        return;
+      }
+
+      const data = await res.json();
+      const serverReply = data.comment;
+      setComments((prev) => {
+        const next = prev.map((c) => {
+          if (c.id === parentId) {
+            return {
+              ...c,
+              replies: (c.replies || []).map((r) => (r.id === tempId ? serverReply : r)),
+            };
+          }
+          return c;
+        });
+        saveToLocalCache(next);
+        return next;
+      });
     } catch (err) {
       console.warn('Offline fallback for reply');
     } finally {
@@ -524,32 +628,66 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
         </div>
       </div>
 
+      {/* Ban restriction notice */}
+      {isBanned && (
+        <div className="p-4 rounded-2xl bg-red-950/70 border border-red-500/40 text-red-200 flex items-start gap-3 animate-fadeIn">
+          <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+          <div className="text-xs space-y-1">
+            <p className="font-bold text-red-300">Participation Restricted</p>
+            <p className="text-red-200/90">
+              {banReason || 'You have been restricted by an administrator from posting comments.'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Inappropriate language / validation error */}
+      {commentError && !isBanned && (
+        <div className="p-3 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 flex items-center justify-between gap-2 text-xs animate-fadeIn">
+          <div className="flex items-center gap-2 min-w-0">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="truncate">{commentError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCommentError(null)}
+            className="p-1 rounded-lg hover:bg-white/10 text-amber-300 hover:text-white shrink-0"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* 2. Top-level Comment Composer */}
       <form onSubmit={handleMainCommentSubmit} className="space-y-3">
         <div className="relative">
           <textarea
             ref={mainInputRef}
             rows={2}
+            disabled={isBanned}
             value={mainCommentText}
-            onChange={(e) => setMainCommentText(e.target.value)}
+            onChange={(e) => {
+              setMainCommentText(e.target.value);
+              if (commentError) setCommentError(null);
+            }}
             onFocus={() => {
-              if (!userName) {
+              if (!userName && !isBanned) {
                 ensureNickname({ type: 'comment', text: mainCommentText });
               }
             }}
-            placeholder={`Say something about ${station.name}...`}
-            className="w-full bg-black/40 border border-white/15 focus:border-rba-yellow/70 rounded-2xl px-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rba-yellow/30 transition resize-none"
+            placeholder={isBanned ? 'Commenting is restricted on this device' : `Say something about ${station.name}...`}
+            className="w-full bg-black/40 border border-white/15 focus:border-rba-yellow/70 rounded-2xl px-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rba-yellow/30 transition resize-none disabled:opacity-50 disabled:cursor-not-allowed"
             maxLength={1000}
           />
         </div>
 
         <div className="flex items-center justify-between">
           <span className="text-[11px] text-slate-400">
-            Press Post to join the live conversation
+            {isBanned ? 'Restricted by administrator' : 'Press Post to join the live conversation'}
           </span>
           <button
             type="submit"
-            disabled={submitting || !mainCommentText.trim()}
+            disabled={isBanned || submitting || !mainCommentText.trim()}
             className="flex items-center gap-2 px-5 py-2 rounded-xl font-bold text-xs bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-red-600/30 transition active:scale-95"
           >
             <Send className="w-3.5 h-3.5" />
@@ -839,6 +977,13 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
             </div>
 
             <form onSubmit={handleSaveNickname} className="space-y-4">
+              {nameError && (
+                <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-xs flex items-start gap-2.5 animate-fadeIn">
+                  <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <div className="leading-relaxed">{nameError}</div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
                   Your Display Name
@@ -849,7 +994,10 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
                   autoFocus
                   maxLength={40}
                   value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
+                  onChange={(e) => {
+                    setNameInput(e.target.value);
+                    if (nameError) setNameError(null);
+                  }}
                   placeholder="e.g., Eric, Aline M., Keza"
                   className="w-full bg-black/50 border border-white/20 focus:border-amber-400 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400/30 transition"
                 />

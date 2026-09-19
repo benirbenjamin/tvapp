@@ -127,6 +127,22 @@ CREATE TABLE IF NOT EXISTS comments (
     author_name VARCHAR(100) NOT NULL,
     content TEXT NOT NULL,
     likes_count INT NOT NULL DEFAULT 0,
+    is_hidden BOOLEAN NOT NULL DEFAULT false,
+    status VARCHAR(50) NOT NULL DEFAULT 'APPROVED' CHECK (status IN ('APPROVED', 'PENDING', 'FLAGGED', 'HIDDEN', 'REJECTED')),
+    flagged_reason TEXT,
+    author_fingerprint VARCHAR(255),
+    ip_address VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+-- Banned Commenters Table (Admin ban management)
+CREATE TABLE IF NOT EXISTS banned_commenters (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    identifier VARCHAR(255) NOT NULL,
+    identifier_type VARCHAR(50) NOT NULL DEFAULT 'fingerprint' CHECK (identifier_type IN ('fingerprint', 'ip', 'author_name')),
+    author_name VARCHAR(100),
+    reason TEXT,
+    banned_by UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
@@ -142,3 +158,5 @@ CREATE INDEX IF NOT EXISTS idx_media_events_type ON media_events (event_type);
 CREATE INDEX IF NOT EXISTS idx_sessions_started_at ON sessions (started_at);
 CREATE INDEX IF NOT EXISTS idx_comments_station ON comments (station_slug, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments (parent_id);
+CREATE INDEX IF NOT EXISTS idx_comments_status ON comments (status, is_hidden);
+CREATE INDEX IF NOT EXISTS idx_banned_identifier ON banned_commenters (identifier);

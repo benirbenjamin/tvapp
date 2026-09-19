@@ -16,6 +16,7 @@ import { VideoPlayer } from '../components/player/VideoPlayer';
 import { VideoCard } from '../components/video/VideoCard';
 import { SEO } from '../components/common/SEO';
 import { AdSenseBanner } from '../components/ads/AdSenseBanner';
+import { InContentAdBanner } from '../components/ads/InContentAdBanner';
 import { ADS_CONFIG } from '../config/ads';
 
 export const VideoDetailPage: React.FC = () => {
@@ -186,6 +187,11 @@ export const VideoDetailPage: React.FC = () => {
             </div>
           </section>
         )}
+
+        {/* In-content sponsor banner */}
+        <div className="max-w-5xl mx-auto">
+          <InContentAdBanner sponsorIndex={4} label="Video Sponsored Partner" />
+        </div>
 
       </div>
     </div>

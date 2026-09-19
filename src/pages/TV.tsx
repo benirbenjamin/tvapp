@@ -6,6 +6,7 @@ import { LiveTVPlayer } from '../components/player/LiveTVPlayer';
 import { VideoCard } from '../components/video/VideoCard';
 import { SEO } from '../components/common/SEO';
 import { AdSenseBanner } from '../components/ads/AdSenseBanner';
+import { InContentAdBanner } from '../components/ads/InContentAdBanner';
 import { ADS_CONFIG } from '../config/ads';
 import { usePlayer } from '../context/PlayerContext';
 import { TVChannelList } from '../components/tv/TVChannelList';
@@ -152,6 +153,9 @@ export const TVPage: React.FC = () => {
           title="Benix Space TV Channels"
           subtitle="Explore all available television channels on Benix Space TV"
         />
+
+        {/* Minimal in-content scroll ad banner with zero-blank guarantee */}
+        <InContentAdBanner sponsorIndex={2} label="Broadcast Sponsored Partner" />
         
         {/* Section Title & Filter Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

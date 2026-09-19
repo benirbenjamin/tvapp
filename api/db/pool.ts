@@ -40,11 +40,32 @@ export async function getPglite() {
 
 export async function query(text: string, params: any[] = []): Promise<{ rows: any[]; rowCount: number }> {
   if (pool) {
-    const res = await pool.query(text, params);
-    return {
-      rows: res.rows,
-      rowCount: res.rowCount ?? res.rows.length,
-    };
+    try {
+      const res = await pool.query(text, params);
+      return {
+        rows: res.rows,
+        rowCount: res.rowCount ?? res.rows.length,
+      };
+    } catch (err: any) {
+      if (
+        err?.code === '28P01' ||
+        err?.code === 'ECONNREFUSED' ||
+        err?.code === 'ENOTFOUND' ||
+        err?.message?.includes('password authentication failed') ||
+        err?.message?.includes('connect ECONNREFUSED')
+      ) {
+        console.warn('⚠️ External PostgreSQL connection unreachable, activating embedded PGlite fallback...');
+        pool = null;
+        isPglite = true;
+        const pgl = await getPglite();
+        const res = await pgl.query(text, params);
+        return {
+          rows: res.rows || [],
+          rowCount: res.rows ? res.rows.length : 0,
+        };
+      }
+      throw err;
+    }
   } else {
     const pgl = await getPglite();
     // PGlite uses standard query(sql, params)

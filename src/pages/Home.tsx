@@ -9,6 +9,7 @@ import { VideoCard } from '../components/video/VideoCard';
 import { SEO } from '../components/common/SEO';
 import { Link } from 'react-router-dom';
 import { AdSenseBanner } from '../components/ads/AdSenseBanner';
+import { InContentAdBanner } from '../components/ads/InContentAdBanner';
 import { ADS_CONFIG } from '../config/ads';
 import { usePlayer } from '../context/PlayerContext';
 import { TVChannelList } from '../components/tv/TVChannelList';
@@ -217,6 +218,9 @@ export const Home: React.FC = () => {
           </section>
         )}
 
+        {/* Minimal In-Content Ad on Scroll (Zero blank space guarantee) */}
+        <InContentAdBanner sponsorIndex={0} label="Official Broadcast Partner" />
+
         {/* 4. Live Radio Stations Carousel (FOURTH - Follows TV sections) */}
         <section className="pt-6 border-t border-slate-200">
           <div className="flex items-center justify-between mb-6">
@@ -249,6 +253,9 @@ export const Home: React.FC = () => {
             ))}
           </div>
         </section>
+
+        {/* Secondary In-Content Ad before footer */}
+        <InContentAdBanner sponsorIndex={1} label="Streaming Partner" />
 
       </div>
     </div>

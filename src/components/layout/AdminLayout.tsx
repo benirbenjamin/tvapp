@@ -15,6 +15,7 @@ import {
   Shield,
   User,
   Key,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -35,6 +36,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, exact: true },
     { name: 'Stations & Live Streams', path: '/admin/stations', icon: Radio },
     { name: 'Videos & Bulletins', path: '/admin/videos', icon: Video },
+    { name: 'Comments & Moderation', path: '/admin/moderation', icon: MessageSquare },
     { name: 'Analytics & Insights', path: '/admin/analytics', icon: BarChart3 },
     ...(isSuperAdmin ? [{ name: 'User Management', path: '/admin/users', icon: Users }] : []),
     { name: 'System Settings', path: '/admin/settings', icon: Settings },

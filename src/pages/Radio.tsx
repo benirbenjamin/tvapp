@@ -16,6 +16,7 @@ import { usePlayer } from '../context/PlayerContext';
 import { AudioWaveform } from '../components/player/AudioWaveform';
 import { isStationFavorite } from '../utils/favorites';
 import { SEO } from '../components/common/SEO';
+import { InContentAdBanner } from '../components/ads/InContentAdBanner';
 
 export const RadioPage: React.FC = () => {
   const [stations, setStations] = useState<Station[]>([]);
@@ -183,6 +184,9 @@ export const RadioPage: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Minimal In-Content Sponsor Banner */}
+        <InContentAdBanner sponsorIndex={3} label="National Broadcast Sponsor" />
 
         {/* Stations Grid */}
         {loading ? (

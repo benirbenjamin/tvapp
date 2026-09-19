@@ -153,6 +153,35 @@ export async function runMigrations() {
         author_name VARCHAR(100) NOT NULL,
         content TEXT NOT NULL,
         likes_count INT NOT NULL DEFAULT 0,
+        is_hidden BOOLEAN NOT NULL DEFAULT false,
+        status VARCHAR(50) NOT NULL DEFAULT 'APPROVED',
+        flagged_reason TEXT,
+        author_fingerprint VARCHAR(255),
+        ip_address VARCHAR(100),
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+      );
+    `);
+
+    // Ensure columns exist on existing DBs
+    try {
+      await query(`ALTER TABLE comments ADD COLUMN IF NOT EXISTS is_hidden BOOLEAN NOT NULL DEFAULT false;`);
+      await query(`ALTER TABLE comments ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'APPROVED';`);
+      await query(`ALTER TABLE comments ADD COLUMN IF NOT EXISTS flagged_reason TEXT;`);
+      await query(`ALTER TABLE comments ADD COLUMN IF NOT EXISTS author_fingerprint VARCHAR(255);`);
+      await query(`ALTER TABLE comments ADD COLUMN IF NOT EXISTS ip_address VARCHAR(100);`);
+    } catch (e) {
+      // Ignore if column already exists or table is fresh
+    }
+
+    // 12. Banned Commenters Table
+    await query(`
+      CREATE TABLE IF NOT EXISTS banned_commenters (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        identifier VARCHAR(255) NOT NULL,
+        identifier_type VARCHAR(50) NOT NULL DEFAULT 'fingerprint',
+        author_name VARCHAR(100),
+        reason TEXT,
+        banned_by UUID REFERENCES users(id) ON DELETE SET NULL,
         created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
       );
     `);
@@ -169,6 +198,8 @@ export async function runMigrations() {
     await query(`CREATE INDEX IF NOT EXISTS idx_sessions_started_at ON sessions (started_at);`);
     await query(`CREATE INDEX IF NOT EXISTS idx_comments_station ON comments (station_slug, created_at DESC);`);
     await query(`CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments (parent_id);`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_comments_status ON comments (status, is_hidden);`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_banned_identifier ON banned_commenters (identifier);`);
 
     console.log('✅ Database migrations applied successfully.');
   } catch (error) {
