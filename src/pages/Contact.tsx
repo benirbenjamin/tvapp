@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Mail, Send, CheckCircle2, Clock, Globe, MessageSquare } from 'lucide-react';
+import { MapPin, Phone, Mail, Send, CheckCircle2, Clock, Globe, MessageSquare, AlertCircle, Loader2 } from 'lucide-react';
 import { SEO } from '../components/common/SEO';
 import { useSettings } from '../context/SettingsContext';
+import { submitFeedback } from '../services/api';
 
 export const ContactPage: React.FC = () => {
   const { settings } = useSettings();
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -13,10 +16,21 @@ export const ContactPage: React.FC = () => {
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setErrorMsg(null);
+    setSubmitting(true);
+    try {
+      await submitFeedback(formData);
+      setSubmitted(true);
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Failed to send message. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-rba-grayBg pb-20">
@@ -163,19 +177,26 @@ export const ContactPage: React.FC = () => {
             {submitted ? (
               <div className="py-12 text-center space-y-3">
                 <CheckCircle2 className="w-16 h-16 text-emerald-500 mx-auto" />
-                <h3 className="font-extrabold text-slate-900 text-lg">Thank you!</h3>
+                <h3 className="font-extrabold text-slate-900 text-lg">Thank you for your message!</h3>
                 <p className="text-xs text-slate-600 max-w-sm mx-auto">
-                  Your message has been received by our communications team. We will get back to you shortly.
+                  Your feedback / inquiry has been delivered directly to our executive team. We appreciate your input!
                 </p>
                 <button
                   onClick={() => setSubmitted(false)}
-                  className="mt-4 px-5 py-2.5 rounded-xl bg-rba-navy text-white text-xs font-bold"
+                  className="mt-4 px-5 py-2.5 rounded-xl bg-rba-navy hover:bg-rba-dark text-white text-xs font-bold transition-colors"
                 >
                   Send another message
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
+                {errorMsg && (
+                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold text-slate-700 block mb-1">Your Name</label>
@@ -220,19 +241,29 @@ export const ContactPage: React.FC = () => {
                     required
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    placeholder="Write your message here..."
+                    placeholder="Write your feedback or query here..."
                     className="w-full px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rba-blue resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 px-6 rounded-xl bg-rba-blue hover:bg-rba-blueHover text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all"
+                  disabled={submitting}
+                  className="w-full py-3.5 px-6 rounded-xl bg-rba-blue hover:bg-rba-blueHover text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-50"
                 >
-                  <Send className="w-4 h-4" /> Send Message
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Sending Message...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" /> Send Message
+                    </>
+                  )}
                 </button>
               </form>
             )}
+
           </div>
 
         </div>

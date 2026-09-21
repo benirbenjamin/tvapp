@@ -183,4 +183,13 @@ export interface DonationConfig {
   description: string;
 }
 
-
+export interface FeedbackMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: 'UNREAD' | 'READ' | 'ARCHIVED';
+  ip_address?: string;
+  created_at: string;
+}

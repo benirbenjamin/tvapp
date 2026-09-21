@@ -1,16 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Radio, Tv, Phone, Mail, MapPin } from 'lucide-react';
+import { Radio, Tv, Phone, Mail, MapPin, MessageSquare, Send, X, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { useAds } from '../../context/AdContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useCoffee } from '../../context/CoffeeContext';
 import { usePWA } from '../../context/PWAContext';
+import { submitFeedback } from '../../services/api';
 
 export const Footer: React.FC = () => {
   const { triggerPopupNow, tvWatchSeconds, isWatchingTv } = useAds();
   const { settings } = useSettings();
   const { openCoffeeModal } = useCoffee();
   const { isInstalled, installPWA } = usePWA();
+
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [fbSubmitted, setFbSubmitted] = useState(false);
+  const [fbSubmitting, setFbSubmitting] = useState(false);
+  const [fbError, setFbError] = useState<string | null>(null);
+  const [fbData, setFbData] = useState({ name: '', email: '', subject: '', message: '' });
+
+  const handleQuickFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFbError(null);
+    setFbSubmitting(true);
+    try {
+      await submitFeedback(fbData);
+      setFbSubmitted(true);
+      setFbData({ name: '', email: '', subject: '', message: '' });
+    } catch (err: any) {
+      setFbError(err.message || 'Failed to submit feedback');
+    } finally {
+      setFbSubmitting(false);
+    }
+  };
+
 
 
 
@@ -255,6 +278,29 @@ export const Footer: React.FC = () => {
                 <span>☕ Buy Us a Coffee</span>
               </button>
             </div>
+
+            {/* Quick Feedback / Contact Us Trigger Box */}
+            <div className="p-3.5 rounded-2xl bg-rba-navyLight/40 border border-white/10 text-xs space-y-2">
+              <div className="flex items-center gap-2 text-rba-yellow font-bold">
+                <MessageSquare className="w-4 h-4 text-rba-yellow" />
+                <span>Audience Feedback</span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Have ideas or suggestions? Send a quick message directly to our admin team!
+              </p>
+              <button
+                onClick={() => {
+                  setFbSubmitted(false);
+                  setFbError(null);
+                  setFeedbackOpen(true);
+                }}
+                className="w-full py-2 rounded-xl bg-rba-blue hover:bg-rba-blueLight text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Submit Feedback</span>
+              </button>
+            </div>
+
           </div>
 
 
@@ -275,13 +321,138 @@ export const Footer: React.FC = () => {
             )}
           </div>
           <div className="flex items-center gap-6">
+            <button
+              onClick={() => {
+                setFbSubmitted(false);
+                setFbError(null);
+                setFeedbackOpen(true);
+              }}
+              className="text-rba-yellow hover:underline font-bold flex items-center gap-1 transition-colors"
+            >
+              <MessageSquare className="w-3.5 h-3.5" /> Submit Feedback
+            </button>
             <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
             <Link to="/about" className="hover:text-slate-300 transition-colors">About Us</Link>
-            <Link to="/contact" className="hover:text-slate-300 transition-colors">Contact</Link>
+            <Link to="/contact" className="hover:text-slate-300 transition-colors">Contact Us</Link>
             <Link to="/admin/login" className="hover:text-slate-300 transition-colors">Admin Portal</Link>
           </div>
         </div>
       </div>
+
+      {/* Quick Feedback Overlay Modal */}
+      {feedbackOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-rba-navy border border-white/20 rounded-3xl p-6 max-w-md w-full shadow-2xl relative text-white space-y-4">
+            <button
+              onClick={() => setFeedbackOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors"
+              aria-label="Close modal"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-rba-blue/20 text-rba-blue">
+                <MessageSquare className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-lg text-white">Send Feedback & Inquiry</h3>
+                <p className="text-xs text-slate-300">Your message reaches the Benix Space TV admin dashboard instantly.</p>
+              </div>
+            </div>
+
+            {fbSubmitted ? (
+              <div className="py-8 text-center space-y-3">
+                <CheckCircle2 className="w-14 h-14 text-emerald-400 mx-auto animate-bounce" />
+                <h4 className="font-extrabold text-white text-base">Message Sent Successfully!</h4>
+                <p className="text-xs text-slate-300 max-w-xs mx-auto">
+                  Thank you for your feedback. Our broadcasting team has received your submission.
+                </p>
+                <button
+                  onClick={() => setFeedbackOpen(false)}
+                  className="mt-2 px-5 py-2 rounded-xl bg-rba-blue hover:bg-rba-blueLight text-white text-xs font-bold transition-all"
+                >
+                  Close Window
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleQuickFeedbackSubmit} className="space-y-3 pt-2">
+                {fbError && (
+                  <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                    <span>{fbError}</span>
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 block mb-1">Your Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={fbData.name}
+                    onChange={(e) => setFbData({ ...fbData, name: e.target.value })}
+                    placeholder="e.g. Mugabo Eric"
+                    className="w-full px-3.5 py-2.5 text-xs bg-white/10 border border-white/15 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rba-blue"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 block mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    value={fbData.email}
+                    onChange={(e) => setFbData({ ...fbData, email: e.target.value })}
+                    placeholder="mugabo@domain.com"
+                    className="w-full px-3.5 py-2.5 text-xs bg-white/10 border border-white/15 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rba-blue"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 block mb-1">Subject</label>
+                  <input
+                    type="text"
+                    required
+                    value={fbData.subject}
+                    onChange={(e) => setFbData({ ...fbData, subject: e.target.value })}
+                    placeholder="Feedback / Station Request / Inquiry"
+                    className="w-full px-3.5 py-2.5 text-xs bg-white/10 border border-white/15 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rba-blue"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 block mb-1">Message</label>
+                  <textarea
+                    rows={4}
+                    required
+                    value={fbData.message}
+                    onChange={(e) => setFbData({ ...fbData, message: e.target.value })}
+                    placeholder="Write your feedback or suggestion for our streams..."
+                    className="w-full px-3.5 py-2.5 text-xs bg-white/10 border border-white/15 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rba-blue resize-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={fbSubmitting}
+                  className="w-full py-3 px-5 rounded-xl bg-rba-blue hover:bg-rba-blueLight text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all disabled:opacity-50 mt-2"
+                >
+                  {fbSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" /> Send Feedback
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </footer>
   );
 };
+

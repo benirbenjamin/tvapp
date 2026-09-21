@@ -10,9 +10,9 @@ import usersRoutes from './routes/users.js';
 import settingsRoutes from './routes/settings.js';
 import commentsRoutes from './routes/comments.js';
 import donationsRoutes from './routes/donations.js';
+import feedbackRoutes from './routes/feedback.js';
 
 const app = express();
-
 
 // CORS configuration supporting tv.benix.space and local dev
 const allowedOrigins = [
@@ -74,6 +74,8 @@ app.use('/api/admin/users', usersRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/donations', donationsRoutes);
+app.use('/api/feedback', feedbackRoutes);
+
 
 
 // 404 handler for unknown API routes

@@ -11,8 +11,9 @@ import {
   Sparkles,
   ExternalLink,
 } from 'lucide-react';
+import { Inbox, Mail, MessageSquare } from 'lucide-react';
 import { AnalyticsOverview, AnalyticsChartsData, Station } from '../../types';
-import { getAnalyticsOverview, getAnalyticsCharts, getStations } from '../../services/api';
+import { getAnalyticsOverview, getAnalyticsCharts, getStations, getAdminFeedback } from '../../services/api';
 import { AdminLayout } from '../../components/layout/AdminLayout';
 import { Link } from 'react-router-dom';
 
@@ -20,20 +21,25 @@ export const DashboardPage: React.FC = () => {
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
   const [charts, setCharts] = useState<AnalyticsChartsData | null>(null);
   const [stations, setStations] = useState<Station[]>([]);
+  const [feedbackStats, setFeedbackStats] = useState<{ total: number; unread: number }>({ total: 0, unread: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const [overviewData, chartsData, stationsData] = await Promise.all([
+        const [overviewData, chartsData, stationsData, feedbackData] = await Promise.all([
           getAnalyticsOverview(),
           getAnalyticsCharts('7d'),
           getStations({ include_inactive: true }),
+          getAdminFeedback().catch(() => ({ stats: { total: 0, unread: 0 } })),
         ]);
 
         setOverview(overviewData);
         setCharts(chartsData);
         setStations(stationsData);
+        if (feedbackData?.stats) {
+          setFeedbackStats({ total: feedbackData.stats.total, unread: feedbackData.stats.unread });
+        }
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
       } finally {
@@ -43,6 +49,7 @@ export const DashboardPage: React.FC = () => {
 
     fetchDashboard();
   }, []);
+
 
   if (loading) {
     return (
@@ -90,7 +97,27 @@ export const DashboardPage: React.FC = () => {
               PostgreSQL Telemetry Live
             </span>
           </div>
-        </div>
+        {/* Unread Feedback Alert Callout */}
+        {feedbackStats.unread > 0 && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-red-500 via-rose-500 to-pink-600 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-white/20 text-white shrink-0">
+                <Inbox className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-sm">You have {feedbackStats.unread} unread feedback message{feedbackStats.unread > 1 ? 's' : ''}!</h3>
+                <p className="text-xs text-red-100">Audience members have sent inquiries or suggestions via the site.</p>
+              </div>
+            </div>
+            <Link
+              to="/admin/feedback"
+              className="px-4 py-2 rounded-xl bg-white text-slate-900 font-bold text-xs hover:bg-slate-100 transition-colors shadow-sm shrink-0"
+            >
+              View Inquiries →
+            </Link>
+          </div>
+        )}
+
 
         {/* Section 1: Visitor Stats Grid */}
         <div>

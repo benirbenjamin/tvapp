@@ -9,7 +9,9 @@ import {
   DonationConfig,
   Donation,
   Supporter,
+  FeedbackMessage,
 } from '../types';
+
 
 
 const API_BASE = '/api';
@@ -353,4 +355,63 @@ export async function getAdminDonations(): Promise<{
   if (!res.ok) throw new Error('Failed to load admin donations');
   return res.json();
 }
+
+// Feedback & Contact API
+export async function submitFeedback(data: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}): Promise<{ success: boolean; data: FeedbackMessage }> {
+  const res = await fetch(`${API_BASE}/feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to submit message');
+  }
+  return res.json();
+}
+
+export async function getAdminFeedback(params?: { status?: string; q?: string }): Promise<{
+  messages: FeedbackMessage[];
+  stats: { total: number; unread: number; read: number; archived: number };
+}> {
+  const query = new URLSearchParams();
+  if (params?.status) query.append('status', params.status);
+  if (params?.q) query.append('q', params.q);
+
+  const res = await fetch(`${API_BASE}/feedback/admin?${query.toString()}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to load feedback messages');
+  return res.json();
+}
+
+export async function updateFeedbackStatus(
+  id: string,
+  status: 'UNREAD' | 'READ' | 'ARCHIVED'
+): Promise<{ success: boolean; message: FeedbackMessage }> {
+  const res = await fetch(`${API_BASE}/feedback/admin/${id}/status`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to update message status');
+  }
+  return res.json();
+}
+
+export async function deleteFeedbackMessage(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/feedback/admin/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to delete message');
+}
+
 

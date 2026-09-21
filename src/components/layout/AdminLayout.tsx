@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -16,16 +16,32 @@ import {
   User,
   Key,
   MessageSquare,
+  Inbox,
+  Mail,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
+import { getAdminFeedback } from '../../services/api';
 
 export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadFeedback, setUnreadFeedback] = useState<number>(0);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isSuperAdmin, logout } = useAuth();
   const { settings } = useSettings();
+
+  useEffect(() => {
+    const checkUnread = async () => {
+      try {
+        const res = await getAdminFeedback({ status: 'UNREAD' });
+        setUnreadFeedback(res.stats.unread || 0);
+      } catch (err) {
+        // Silently fail if unauthenticated or error
+      }
+    };
+    checkUnread();
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -34,6 +50,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const navItems = [
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, exact: true },
+    { name: 'Feedback & Inquiries', path: '/admin/feedback', icon: Inbox, badge: unreadFeedback },
     { name: 'Stations & Live Streams', path: '/admin/stations', icon: Radio },
     { name: 'Videos & Bulletins', path: '/admin/videos', icon: Video },
     { name: 'Comments & Moderation', path: '/admin/moderation', icon: MessageSquare },
@@ -42,6 +59,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
     { name: 'System Settings', path: '/admin/settings', icon: Settings },
     { name: 'Profile & Password', path: '/admin/profile', icon: Key },
   ];
+
 
   const isActive = (item: { path: string; exact?: boolean }) => {
     if (item.exact) return location.pathname === item.path;
@@ -107,15 +125,23 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                   key={item.path}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
                     active
                       ? 'bg-rba-blue text-white shadow-md'
                       : 'text-slate-300 hover:text-white hover:bg-white/10'
                   }`}
                 >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span>{item.name}</span>
+                  <div className="flex items-center gap-3">
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span>{item.name}</span>
+                  </div>
+                  {item.badge && item.badge > 0 ? (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-red-500 text-white animate-pulse">
+                      {item.badge}
+                    </span>
+                  ) : null}
                 </Link>
+
               );
             })}
           </nav>

@@ -180,6 +180,18 @@ CREATE TABLE IF NOT EXISTS donations (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_donations_status ON donations (status, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_donations_tx_ref ON donations (tx_ref);
+-- Feedback Messages Table (User inquiries & feedback submitted via /contact and footer)
+CREATE TABLE IF NOT EXISTS feedback_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'UNREAD' CHECK (status IN ('UNREAD', 'READ', 'ARCHIVED')),
+    ip_address VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback_messages (status, created_at DESC);
+
 

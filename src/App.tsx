@@ -41,7 +41,9 @@ import { UsersAdminPage } from './pages/admin/UsersAdmin';
 import { SettingsAdminPage } from './pages/admin/SettingsAdmin';
 import { ProfileAdminPage } from './pages/admin/ProfileAdmin';
 import { CommentsModerationAdminPage } from './pages/admin/CommentsModerationAdmin';
+import { FeedbackAdminPage } from './pages/admin/FeedbackAdmin';
 import { NotFoundPage } from './pages/NotFound';
+
 
 // Protected Route Helpers
 const ProtectedAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -157,6 +159,14 @@ export const App: React.FC = () => {
                           }
                         />
                         <Route
+                          path="/admin/feedback"
+                          element={
+                            <ProtectedAdminRoute>
+                              <FeedbackAdminPage />
+                            </ProtectedAdminRoute>
+                          }
+                        />
+                        <Route
                           path="/admin/analytics"
                           element={
                             <ProtectedAdminRoute>
@@ -164,6 +174,7 @@ export const App: React.FC = () => {
                             </ProtectedAdminRoute>
                           }
                         />
+
                         <Route
                           path="/admin/users"
                           element={

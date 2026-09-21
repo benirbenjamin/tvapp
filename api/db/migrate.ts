@@ -207,6 +207,20 @@ export async function runMigrations() {
       );
     `);
 
+    // 14. Feedback Messages Table (User inquiries & feedback submitted via /contact and footer)
+    await query(`
+      CREATE TABLE IF NOT EXISTS feedback_messages (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        subject VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        status VARCHAR(50) NOT NULL DEFAULT 'UNREAD',
+        ip_address VARCHAR(100),
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+      );
+    `);
+
     // Indexes
     await query(`CREATE INDEX IF NOT EXISTS idx_stations_active ON stations (is_active, display_order);`);
     await query(`CREATE INDEX IF NOT EXISTS idx_stations_slug ON stations (slug);`);
@@ -223,7 +237,7 @@ export async function runMigrations() {
     await query(`CREATE INDEX IF NOT EXISTS idx_banned_identifier ON banned_commenters (identifier);`);
     await query(`CREATE INDEX IF NOT EXISTS idx_donations_status ON donations (status, created_at DESC);`);
     await query(`CREATE INDEX IF NOT EXISTS idx_donations_tx_ref ON donations (tx_ref);`);
-
+    await query(`CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback_messages (status, created_at DESC);`);
 
     console.log('✅ Database migrations applied successfully.');
   } catch (error) {
