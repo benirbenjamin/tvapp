@@ -17,7 +17,10 @@ export const RadioSlider: React.FC<RadioSliderProps> = ({ stations }) => {
   const [favorites, setFavorites] = useState<string[]>([]);
   const touchStartX = useRef<number | null>(null);
 
-  const radioStations = stations.filter((s) => s.station_type === 'RADIO' && s.is_active);
+  const radioStations = Array.isArray(stations)
+    ? stations.filter((s) => s && s.station_type === 'RADIO' && s.is_active)
+    : [];
+
 
   // Auto-scroll interval (every 4.5 seconds)
   useEffect(() => {

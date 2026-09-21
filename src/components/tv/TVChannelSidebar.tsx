@@ -16,7 +16,10 @@ export const TVChannelSidebar: React.FC<TVChannelSidebarProps> = ({
   onSelectStation,
   isPlaying = false,
 }) => {
-  const tvStations = stations.filter((s) => s.station_type === 'TV' && s.is_active);
+  const tvStations = Array.isArray(stations)
+    ? stations.filter((s) => s && s.station_type === 'TV' && s.is_active)
+    : [];
+
 
   if (tvStations.length === 0) return null;
 

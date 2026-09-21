@@ -33,14 +33,23 @@ export const Home: React.FC = () => {
     const loadHomeData = async () => {
       try {
         const [stationsData, videosData] = await Promise.all([
-          getStations(),
-          getVideos({ limit: 8 }),
+          getStations().catch((err) => {
+            console.warn('Failed to load stations on home:', err);
+            return [];
+          }),
+          getVideos({ limit: 8 }).catch((err) => {
+            console.warn('Failed to load videos on home:', err);
+            return { data: [] };
+          }),
         ]);
 
-        setStations(stationsData);
-        setVideos(videosData.data || []);
+        const validStations = Array.isArray(stationsData) ? stationsData : [];
+        const validVideos = Array.isArray(videosData?.data) ? videosData.data : [];
 
-        const tvStations = stationsData.filter((s) => s.station_type === 'TV' && s.is_active);
+        setStations(validStations);
+        setVideos(validVideos);
+
+        const tvStations = validStations.filter((s) => s && s.station_type === 'TV' && s.is_active);
         if (tvStations.length > 0) {
           // Default to RTV Live or first station
           const rtv = tvStations.find((s) => s.slug === 'rtv') || tvStations[0];
@@ -49,19 +58,26 @@ export const Home: React.FC = () => {
         }
       } catch (err) {
         console.error('Failed to load home page data:', err);
+        setStations([]);
+        setVideos([]);
       } finally {
         setLoading(false);
       }
+
     };
 
     loadHomeData();
   }, [setActiveTvStation]);
 
-  const tvStations = stations.filter((s) => s.station_type === 'TV' && s.is_active);
-  const radioStations = stations.filter((s) => s.station_type === 'RADIO' && s.is_active);
+  const validStationsList = Array.isArray(stations) ? stations : [];
+  const validVideosList = Array.isArray(videos) ? videos : [];
 
-  const latestVideos = videos.slice(0, 4);
-  const mostWatched = [...videos].sort((a, b) => b.views_count - a.views_count).slice(0, 4);
+  const tvStations = validStationsList.filter((s) => s && s.station_type === 'TV' && s.is_active);
+  const radioStations = validStationsList.filter((s) => s && s.station_type === 'RADIO' && s.is_active);
+
+  const latestVideos = validVideosList.slice(0, 4);
+  const mostWatched = [...validVideosList].sort((a, b) => (b?.views_count || 0) - (a?.views_count || 0)).slice(0, 4);
+
 
   return (
     <div className="min-h-screen bg-rba-grayBg">
