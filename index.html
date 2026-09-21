@@ -33,7 +33,19 @@
       src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4078466828008985"
       crossorigin="anonymous"
     ></script>
+
+    <!-- Emergency Service Worker Recovery Script for Legacy Browsers -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (var reg of registrations) {
+            reg.update();
+          }
+        });
+      }
+    </script>
   </head>
+
   <body class="bg-rba-grayBg text-slate-800 antialiased selection:bg-rba-blue selection:text-white min-h-screen">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
