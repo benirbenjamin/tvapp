@@ -1,3 +1,6 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Radio, Tv, Phone, Mail, MapPin } from 'lucide-react';
 import { useAds } from '../../context/AdContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useCoffee } from '../../context/CoffeeContext';
@@ -8,6 +11,7 @@ export const Footer: React.FC = () => {
   const { settings } = useSettings();
   const { openCoffeeModal } = useCoffee();
   const { isInstalled, installPWA } = usePWA();
+
 
 
   return (
