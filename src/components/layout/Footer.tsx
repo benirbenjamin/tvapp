@@ -1,14 +1,14 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Radio, Tv, Phone, Mail, MapPin, ExternalLink, Globe } from 'lucide-react';
 import { useAds } from '../../context/AdContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useCoffee } from '../../context/CoffeeContext';
+import { usePWA } from '../../context/PWAContext';
 
 export const Footer: React.FC = () => {
   const { triggerPopupNow, tvWatchSeconds, isWatchingTv } = useAds();
   const { settings } = useSettings();
   const { openCoffeeModal } = useCoffee();
+  const { isInstalled, installPWA } = usePWA();
+
 
   return (
     <footer className="bg-rba-dark text-slate-300 border-t border-rba-navyLight pt-14 pb-28 sm:pb-24">
@@ -214,6 +214,14 @@ export const Footer: React.FC = () => {
                 Listen On Mobile Apps
               </span>
               <div className="flex flex-wrap gap-2">
+                {!isInstalled && (
+                  <button
+                    onClick={installPWA}
+                    className="px-3 py-1.5 rounded-lg bg-rba-blue hover:bg-rba-blueLight text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+                  >
+                    <span>📲 Install App</span>
+                  </button>
+                )}
                 <span className="px-3 py-1.5 rounded-lg bg-white/10 text-white text-xs font-semibold hover:bg-white/15 cursor-default">
                   App Store
                 </span>
@@ -225,6 +233,7 @@ export const Footer: React.FC = () => {
                 </span>
               </div>
             </div>
+
 
             {/* Support Stream Banner */}
             <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/15 via-orange-500/15 to-amber-600/15 border border-amber-500/30 text-xs space-y-2">
