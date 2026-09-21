@@ -13,6 +13,8 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { usePlayer } from '../../context/PlayerContext';
 import { useSettings } from '../../context/SettingsContext';
+import { useCoffee } from '../../context/CoffeeContext';
+
 
 export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -22,6 +24,8 @@ export const Header: React.FC = () => {
   const { user, isAdmin } = useAuth();
   const { currentStation, isPlaying } = usePlayer();
   const { settings } = useSettings();
+  const { openCoffeeModal } = useCoffee();
+
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +74,14 @@ export const Header: React.FC = () => {
               <span className="hidden md:inline">Playing:</span> {currentStation.name}
             </div>
           )}
+          
+          <button
+            onClick={() => openCoffeeModal(1)}
+            className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 text-[11px] transition-colors bg-amber-400/10 hover:bg-amber-400/20 px-2 py-0.5 rounded-lg border border-amber-400/30"
+          >
+            <span>☕ Buy Coffee</span>
+          </button>
+
           {/* Only show Admin Portal if already logged in as staff */}
           {isAdmin && (
             <Link
@@ -113,7 +125,7 @@ export const Header: React.FC = () => {
           ))}
         </nav>
 
-        {/* Right Search Input */}
+        {/* Right Search Input & Buy Coffee */}
         <div className="hidden lg:flex items-center gap-3">
           <form onSubmit={handleSearchSubmit} className="relative">
             <input
@@ -121,10 +133,18 @@ export const Header: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search radio, TV, videos..."
-              className="w-56 xl:w-64 pl-9 pr-4 py-1.5 text-xs bg-white/10 border border-white/10 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rba-blue focus:bg-white/15 transition-all"
+              className="w-48 xl:w-56 pl-9 pr-4 py-1.5 text-xs bg-white/10 border border-white/10 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rba-blue focus:bg-white/15 transition-all"
             />
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
           </form>
+
+          <button
+            onClick={() => openCoffeeModal(1)}
+            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md transition-transform hover:scale-105"
+          >
+            <span className="text-sm">☕</span>
+            <span>Buy Us a Coffee</span>
+          </button>
 
           <Link
             to="/tv"
@@ -134,6 +154,7 @@ export const Header: React.FC = () => {
             Watch Live
           </Link>
         </div>
+
 
         {/* Mobile Actions */}
         <div className="flex items-center gap-2 md:hidden">
@@ -188,11 +209,31 @@ export const Header: React.FC = () => {
             ))}
           </div>
 
-          <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+          {/* Mobile Buy Me a Coffee Support Banner */}
+          <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-600/20 border border-amber-500/30 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl">☕</span>
+              <div>
+                <span className="text-xs font-bold text-amber-300 block">Support Our Stream</span>
+                <span className="text-[10px] text-slate-300">Fuel 24/7 broadcasting</span>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                openCoffeeModal(1);
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs shadow-md"
+            >
+              Buy Coffee
+            </button>
+          </div>
+
+          <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2">
             <Link
               to="/tv"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full py-2.5 rounded-xl bg-red-600 text-white font-bold text-center text-sm shadow-md"
+              className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold text-center text-sm shadow-md"
             >
               Watch RTV Live
             </Link>
@@ -200,12 +241,13 @@ export const Header: React.FC = () => {
               <Link
                 to="/admin"
                 onClick={() => setMobileMenuOpen(false)}
-                className="ml-2 py-2.5 px-4 rounded-xl bg-rba-yellow text-rba-dark font-bold text-sm"
+                className="py-2.5 px-4 rounded-xl bg-rba-yellow text-rba-dark font-bold text-sm"
               >
                 Admin
               </Link>
             )}
           </div>
+
         </div>
       )}
     </header>

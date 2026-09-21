@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom';
 import { Radio, Tv, Phone, Mail, MapPin, ExternalLink, Globe } from 'lucide-react';
 import { useAds } from '../../context/AdContext';
 import { useSettings } from '../../context/SettingsContext';
+import { useCoffee } from '../../context/CoffeeContext';
 
 export const Footer: React.FC = () => {
   const { triggerPopupNow, tvWatchSeconds, isWatchingTv } = useAds();
   const { settings } = useSettings();
+  const { openCoffeeModal } = useCoffee();
+
   return (
     <footer className="bg-rba-dark text-slate-300 border-t border-rba-navyLight pt-14 pb-28 sm:pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -222,7 +225,25 @@ export const Footer: React.FC = () => {
                 </span>
               </div>
             </div>
+
+            {/* Support Stream Banner */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/15 via-orange-500/15 to-amber-600/15 border border-amber-500/30 text-xs space-y-2">
+              <div className="flex items-center gap-2 text-amber-300 font-bold">
+                <span className="text-base">☕</span>
+                <span>Fuel Independent Media</span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Enjoying our live TV and radio streams? Buy us a coffee via Mobile Money or Card!
+              </p>
+              <button
+                onClick={() => openCoffeeModal(1)}
+                className="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+              >
+                <span>☕ Buy Us a Coffee</span>
+              </button>
+            </div>
           </div>
+
 
         </div>
 

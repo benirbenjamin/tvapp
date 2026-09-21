@@ -186,6 +186,27 @@ export async function runMigrations() {
       );
     `);
 
+    // 13. Donations Table (Buy Me a Coffee with Flutterwave)
+    await query(`
+      CREATE TABLE IF NOT EXISTS donations (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tx_ref VARCHAR(255) UNIQUE NOT NULL,
+        flw_ref VARCHAR(255),
+        transaction_id VARCHAR(255),
+        donor_name VARCHAR(100) NOT NULL DEFAULT 'Supporter',
+        donor_email VARCHAR(255) NOT NULL,
+        donor_phone VARCHAR(50),
+        currency VARCHAR(10) NOT NULL DEFAULT 'RWF',
+        amount NUMERIC(12, 2) NOT NULL,
+        coffee_cups INT NOT NULL DEFAULT 1,
+        message TEXT,
+        status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+        payment_type VARCHAR(50),
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+      );
+    `);
+
     // Indexes
     await query(`CREATE INDEX IF NOT EXISTS idx_stations_active ON stations (is_active, display_order);`);
     await query(`CREATE INDEX IF NOT EXISTS idx_stations_slug ON stations (slug);`);
@@ -200,6 +221,9 @@ export async function runMigrations() {
     await query(`CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments (parent_id);`);
     await query(`CREATE INDEX IF NOT EXISTS idx_comments_status ON comments (status, is_hidden);`);
     await query(`CREATE INDEX IF NOT EXISTS idx_banned_identifier ON banned_commenters (identifier);`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_donations_status ON donations (status, created_at DESC);`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_donations_tx_ref ON donations (tx_ref);`);
+
 
     console.log('✅ Database migrations applied successfully.');
   } catch (error) {

@@ -140,3 +140,47 @@ export interface Comment {
   replies?: Comment[];
 }
 
+export interface CurrencyOption {
+  code: string;
+  name: string;
+  symbol: string;
+  cupPrice: number;
+  flag: string;
+  country: string;
+}
+
+export interface Donation {
+  id?: string;
+  tx_ref: string;
+  flw_ref?: string;
+  transaction_id?: string;
+  donor_name: string;
+  donor_email: string;
+  donor_phone?: string;
+  currency: string;
+  amount: number;
+  coffee_cups: number;
+  message?: string;
+  status: 'PENDING' | 'SUCCESSFUL' | 'FAILED' | 'CANCELLED';
+  payment_type?: string;
+  created_at?: string;
+}
+
+export interface Supporter {
+  donor_name: string;
+  currency: string;
+  amount: number;
+  coffee_cups: number;
+  message?: string;
+  created_at: string;
+}
+
+export interface DonationConfig {
+  public_key: string;
+  currencies: CurrencyOption[];
+  merchant_name: string;
+  title: string;
+  description: string;
+}
+
+

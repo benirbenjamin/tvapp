@@ -6,7 +6,11 @@ import {
   SiteSettings,
   AnalyticsOverview,
   AnalyticsChartsData,
+  DonationConfig,
+  Donation,
+  Supporter,
 } from '../types';
+
 
 const API_BASE = '/api';
 
@@ -281,3 +285,72 @@ export async function globalSearch(q: string) {
   if (!res.ok) throw new Error('Search failed');
   return res.json();
 }
+
+// Donations API (Buy Me a Coffee)
+export async function getDonationConfig(): Promise<DonationConfig> {
+  const res = await fetch(`${API_BASE}/donations/config`);
+  if (!res.ok) throw new Error('Failed to load donations config');
+  return res.json();
+}
+
+export async function initializeDonation(data: {
+  donor_name?: string;
+  donor_email: string;
+  donor_phone?: string;
+  currency: string;
+  amount: number;
+  coffee_cups: number;
+  message?: string;
+}): Promise<{ success: boolean; donation: Donation; tx_ref: string; public_key: string }> {
+  const res = await fetch(`${API_BASE}/donations/initialize`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to initialize donation');
+  }
+  return res.json();
+}
+
+export async function verifyDonation(data: {
+  tx_ref: string;
+  transaction_id?: string;
+  status?: string;
+  flw_ref?: string;
+  payment_type?: string;
+}): Promise<{ success: boolean; donation: Donation }> {
+  const res = await fetch(`${API_BASE}/donations/verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to verify donation');
+  }
+  return res.json();
+}
+
+export async function getRecentSupporters(): Promise<{
+  supporters: Supporter[];
+  stats: { total_donations: number; total_cups: number };
+}> {
+  const res = await fetch(`${API_BASE}/donations/recent`);
+  if (!res.ok) throw new Error('Failed to load recent supporters');
+  return res.json();
+}
+
+export async function getAdminDonations(): Promise<{
+  donations: Donation[];
+  summary: { successful_count: number; pending_count: number; total_cups: number };
+  revenue_by_currency: Array<{ currency: string; total_amount: string | number; count: string | number }>;
+}> {
+  const res = await fetch(`${API_BASE}/donations/admin`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to load admin donations');
+  return res.json();
+}
+

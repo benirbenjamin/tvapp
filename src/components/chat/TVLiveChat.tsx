@@ -18,8 +18,10 @@ import {
 } from 'lucide-react';
 import { Station, Comment } from '../../types';
 import { checkInappropriateLanguage } from '../../utils/moderation';
+import { useCoffee } from '../../context/CoffeeContext';
 
 interface TVLiveChatProps {
+
   station: Station;
 }
 
@@ -83,9 +85,11 @@ function formatTimeAgo(dateString: string): string {
 }
 
 export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
+  const { openCoffeeModal } = useCoffee();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
   const [hasEarlier, setHasEarlier] = useState(false);
   const [earlierCount, setEarlierCount] = useState(0);
   const [earliestTimestamp, setEarliestTimestamp] = useState<string | null>(null);
@@ -584,8 +588,17 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
           </div>
         </div>
 
-        {/* User Identity pill */}
+        {/* User Identity & Coffee Support pill */}
         <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => openCoffeeModal(1)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs shadow-md transition"
+            title="Buy Us a Coffee"
+          >
+            <span>☕</span>
+            <span className="hidden xs:inline">Support</span>
+          </button>
+
           {userName ? (
             <button
               onClick={() => {
@@ -626,6 +639,7 @@ export const TVLiveChat: React.FC<TVLiveChatProps> = ({ station }) => {
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`} />
           </button>
         </div>
+
       </div>
 
       {/* Ban restriction notice */}
