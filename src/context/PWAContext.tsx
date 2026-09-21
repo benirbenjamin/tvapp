@@ -17,32 +17,41 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState<boolean>(false);
   const [isInstalled, setIsInstalled] = useState<boolean>(() => {
-    // 1. Check window.matchMedia standalone mode
-    if (typeof window !== 'undefined') {
-      const isStandaloneMedia = window.matchMedia('(display-mode: standalone)').matches;
-      const isNavStandalone = (navigator as any).standalone === true;
-      const isCachedInstalled = localStorage.getItem(INSTALLED_KEY) === 'true';
-      return isStandaloneMedia || isNavStandalone || isCachedInstalled;
+    try {
+      if (typeof window !== 'undefined') {
+        const isStandaloneMedia = window.matchMedia ? window.matchMedia('(display-mode: standalone)').matches : false;
+        const isNavStandalone = (navigator as any)?.standalone === true;
+        const isCachedInstalled = localStorage.getItem(INSTALLED_KEY) === 'true';
+        return isStandaloneMedia || isNavStandalone || isCachedInstalled;
+      }
+    } catch {
+      // safe fallback
     }
     return false;
   });
   const [showBanner, setShowBanner] = useState<boolean>(false);
 
   useEffect(() => {
-    // Detect standalone mode changes
-    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    let mediaQuery: MediaQueryList | null = null;
     const handleModeChange = (e: MediaQueryListEvent) => {
       if (e.matches) {
         setIsInstalled(true);
-        localStorage.setItem(INSTALLED_KEY, 'true');
+        try { localStorage.setItem(INSTALLED_KEY, 'true'); } catch {}
         setShowBanner(false);
       }
     };
+
     try {
-      mediaQuery.addEventListener('change', handleModeChange);
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        mediaQuery = window.matchMedia('(display-mode: standalone)');
+        if (mediaQuery.addEventListener) {
+          mediaQuery.addEventListener('change', handleModeChange);
+        }
+      }
     } catch {
       // Fallback for older browsers
     }
+
 
     // Capture beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {

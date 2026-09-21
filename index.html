@@ -41,7 +41,9 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
           navigator.serviceWorker.register('/sw.js').then(function(reg) {
-            console.log('PWA ServiceWorker registered successfully with scope:', reg.scope);
+            console.log('PWA ServiceWorker registered:', reg.scope);
+            // Check for service worker updates on page load
+            if (reg.update) reg.update();
           }).catch(function(err) {
             console.warn('PWA ServiceWorker registration failed:', err);
           });
@@ -50,4 +52,5 @@
     </script>
   </body>
 </html>
+
 
