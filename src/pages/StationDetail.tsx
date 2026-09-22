@@ -21,6 +21,8 @@ import { StationCard } from '../components/radio/StationCard';
 import { LiveTVPlayer } from '../components/player/LiveTVPlayer';
 import { SEO } from '../components/common/SEO';
 
+import { useAds } from '../context/AdContext';
+
 export const StationDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [station, setStation] = useState<Station | null>(null);
@@ -30,6 +32,7 @@ export const StationDetailPage: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   const { currentStation, isPlaying, playStation, pauseStation } = usePlayer();
+  const { triggerRadioAdIfNeeded } = useAds();
 
   useEffect(() => {
     const fetchStation = async () => {
@@ -81,7 +84,9 @@ export const StationDetailPage: React.FC = () => {
     if (isCurrentlyPlaying) {
       pauseStation();
     } else {
-      playStation(station);
+      triggerRadioAdIfNeeded(station, () => {
+        playStation(station);
+      });
     }
   };
 

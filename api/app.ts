@@ -11,6 +11,7 @@ import settingsRoutes from './routes/settings.js';
 import commentsRoutes from './routes/comments.js';
 import donationsRoutes from './routes/donations.js';
 import feedbackRoutes from './routes/feedback.js';
+import adsRoutes from './routes/ads.js';
 
 const app = express();
 
@@ -75,6 +76,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/donations', donationsRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/ads', adsRoutes);
 
 
 

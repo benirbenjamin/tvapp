@@ -42,6 +42,9 @@ import { SettingsAdminPage } from './pages/admin/SettingsAdmin';
 import { ProfileAdminPage } from './pages/admin/ProfileAdmin';
 import { CommentsModerationAdminPage } from './pages/admin/CommentsModerationAdmin';
 import { FeedbackAdminPage } from './pages/admin/FeedbackAdmin';
+import { AdsAdminPage } from './pages/admin/AdsAdmin';
+import { PublicAdAnalyticsPage } from './pages/PublicAdAnalytics';
+import { RadioAdModal } from './components/ads/RadioAdModal';
 import { NotFoundPage } from './pages/NotFound';
 
 
@@ -97,6 +100,18 @@ const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 const GlobalAdPopup: React.FC = () => {
   const { isPopupOpen, closePopup } = useAds();
   return <AdPopupModal isOpen={isPopupOpen} onClose={closePopup} />;
+};
+
+// Global Radio Pre-Roll Ad Modal (10s forced ad before radio play)
+const GlobalRadioAdModal: React.FC = () => {
+  const { isRadioAdOpen, pendingRadioStation, completeRadioAd } = useAds();
+  return (
+    <RadioAdModal
+      isOpen={isRadioAdOpen}
+      station={pendingRadioStation}
+      onComplete={completeRadioAd}
+    />
+  );
 };
 
 export const App: React.FC = () => {
@@ -167,6 +182,15 @@ export const App: React.FC = () => {
                           }
                         />
                         <Route
+                          path="/admin/ads"
+                          element={
+                            <ProtectedAdminRoute>
+                              <AdsAdminPage />
+                            </ProtectedAdminRoute>
+                          }
+                        />
+                        <Route path="/ad-analytics/:token" element={<PublicAdAnalyticsPage />} />
+                        <Route
                           path="/admin/analytics"
                           element={
                             <ProtectedAdminRoute>
@@ -215,6 +239,9 @@ export const App: React.FC = () => {
 
                       {/* Global Interstitial Ad Popup (Every 15 min with 10s countdown) */}
                       <GlobalAdPopup />
+
+                      {/* 10-second Radio Pre-roll Ad Modal (4-min throttle) */}
+                      <GlobalRadioAdModal />
 
                       {/* Buy Me a Coffee Modal & Floating Trigger */}
                       <BuyCoffeeModal />

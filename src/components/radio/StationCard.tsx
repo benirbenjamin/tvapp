@@ -6,12 +6,15 @@ import { AudioWaveform } from '../player/AudioWaveform';
 import { isStationFavorite, toggleFavorite } from '../../utils/favorites';
 import { Link } from 'react-router-dom';
 
+import { useAds } from '../../context/AdContext';
+
 interface StationCardProps {
   station: Station;
 }
 
 export const StationCard: React.FC<StationCardProps> = ({ station }) => {
   const { currentStation, isPlaying, playStation, pauseStation } = usePlayer();
+  const { triggerRadioAdIfNeeded } = useAds();
   const [isFav, setIsFav] = useState(() => isStationFavorite(station.id));
 
   const isCurrent = currentStation?.id === station.id;
@@ -23,7 +26,9 @@ export const StationCard: React.FC<StationCardProps> = ({ station }) => {
     if (isPlayingThis) {
       pauseStation();
     } else {
-      playStation(station);
+      triggerRadioAdIfNeeded(station, () => {
+        playStation(station);
+      });
     }
   };
 

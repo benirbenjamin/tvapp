@@ -6,8 +6,17 @@ export const ADS_CONFIG = {
   // Google AdSense Publisher ID
   CLIENT_ID: 'ca-pub-4078466828008985',
 
+  // Direct WhatsApp contact for advertisers (+250783987223)
+  WHATSAPP_NUMBER: '+250783987223',
+
+  // Default number of Google AdSense ads before showing 1 Custom Ad
+  GOOGLE_ADS_PER_CUSTOM_AD: 2,
+
+  // Radio Ad pre-roll settings (4-minute throttle, 10-second countdown)
+  RADIO_AD_INTERVAL_SECONDS: 240, // 4 minutes
+  RADIO_AD_COUNTDOWN_SECONDS: 10, // 10 seconds countdown
+
   // Periodic TV Companion Ad Refresh interval (in seconds): 2.5 minutes (150s)
-  // Re-fetches a fresh ad without interrupting video/audio playback
   TV_BANNER_REFRESH_SECONDS: 150,
 
   // Interval for displaying the interstitial ad popup while watching TV (15 minutes)
@@ -21,5 +30,7 @@ export const ADS_CONFIG = {
     TV_COMPANION_BANNER: '1234567890',
     POPUP_INTERSTITIAL: '2345678901',
     IN_FEED_BANNER: '3456789012',
+    RADIO_PREROLL: '4567890123',
+    SIDEBAR_BANNER: '5678901234',
   },
 } as const;

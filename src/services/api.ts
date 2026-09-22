@@ -10,6 +10,8 @@ import {
   Donation,
   Supporter,
   FeedbackMessage,
+  CustomAd,
+  AdSettings,
 } from '../types';
 
 
@@ -413,5 +415,274 @@ export async function deleteFeedbackMessage(id: string): Promise<void> {
   });
   if (!res.ok) throw new Error('Failed to delete message');
 }
+
+// Custom Ads API Functions
+export async function getPublicAds(): Promise<{ settings: AdSettings; ads: CustomAd[] }> {
+  try {
+    const res = await fetch(`${API_BASE}/ads`);
+    if (res.ok) {
+      const data = await res.json();
+      return {
+        settings: data.settings,
+        ads: data.ads || [],
+      };
+    }
+  } catch (e) {
+    // Ignore and fallback to local storage
+  }
+
+  // Fallback to localStorage if API unreachable
+  const storedAds = localStorage.getItem('rba_custom_ads');
+  const storedSettings = localStorage.getItem('rba_ad_settings');
+
+  const defaultSettings: AdSettings = {
+    whatsapp_number: '+250783987223',
+    google_ads_per_custom_ad: 2,
+    enable_custom_ads: true,
+    enable_google_adsense: true,
+    default_share_expiry_hours: 168,
+    radio_ad_interval_seconds: 240,
+    radio_ad_countdown_seconds: 10,
+  };
+
+  return {
+    settings: storedSettings ? { ...defaultSettings, ...JSON.parse(storedSettings) } : defaultSettings,
+    ads: storedAds ? JSON.parse(storedAds) : [],
+  };
+}
+
+export async function recordAdEvent(adId: string, eventType: 'IMPRESSION' | 'CLICK'): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/ads/${adId}/event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_type: eventType }),
+    });
+  } catch (e) {
+    // Ignore error
+  }
+}
+
+export async function getPublicAdAnalyticsByToken(token: string): Promise<{
+  ad: CustomAd;
+  timeseries: Array<{ date_label: string; impressions: number; clicks: number }>;
+}> {
+  const res = await fetch(`${API_BASE}/ads/public-analytics/${token}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Analytics share link not found or expired.');
+  }
+  return res.json();
+}
+
+export async function getAdminAds(): Promise<{ ads: CustomAd[]; settings: AdSettings }> {
+  try {
+    const res = await fetch(`${API_BASE}/ads/admin`, {
+      headers: getAuthHeaders(),
+    });
+    if (res.ok) {
+      return res.json();
+    }
+  } catch (e) {
+    // Fallback to localStorage
+  }
+
+  const storedAds = localStorage.getItem('rba_custom_ads');
+  const storedSettings = localStorage.getItem('rba_ad_settings');
+
+  const defaultSettings: AdSettings = {
+    whatsapp_number: '+250783987223',
+    google_ads_per_custom_ad: 2,
+    enable_custom_ads: true,
+    enable_google_adsense: true,
+    default_share_expiry_hours: 168,
+    radio_ad_interval_seconds: 240,
+    radio_ad_countdown_seconds: 10,
+  };
+
+  return {
+    ads: storedAds ? JSON.parse(storedAds) : [],
+    settings: storedSettings ? { ...defaultSettings, ...JSON.parse(storedSettings) } : defaultSettings,
+  };
+}
+
+export async function createCustomAd(data: Partial<CustomAd> & { expiry_hours?: number }): Promise<{ success: boolean; ad: CustomAd }> {
+  try {
+    const res = await fetch(`${API_BASE}/ads/admin`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (res.ok) {
+      return res.json();
+    }
+  } catch (e) {
+    // Fallback to localStorage
+  }
+
+  const storedAds = localStorage.getItem('rba_custom_ads');
+  const adsList: CustomAd[] = storedAds ? JSON.parse(storedAds) : [];
+
+  const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const expiryHours = data.expiry_hours || 168;
+
+  const newAd: CustomAd = {
+    id: 'ad-' + Date.now(),
+    title: data.title || 'Untitled Ad',
+    sponsor_name: data.sponsor_name || 'Sponsor',
+    owner_phone: data.owner_phone || '+250783987223',
+    category: data.category || 'General',
+    tagline: data.tagline || '',
+    description: data.description || '',
+    cta_text: data.cta_text || 'Learn More',
+    cta_url: data.cta_url || '#',
+    media_type: data.media_type || 'IMAGE',
+    banner_url: data.banner_url || '',
+    bg_gradient: data.bg_gradient || 'from-blue-900 via-blue-800 to-slate-900',
+    accent_color: data.accent_color || '#0284c7',
+    badge_text: data.badge_text || 'Sponsored',
+    status: data.status || 'ACTIVE',
+    start_date: data.start_date || new Date().toISOString(),
+    end_date: data.end_date,
+    impressions_count: 0,
+    clicks_count: 0,
+    share_token: token,
+    token_expires_at: new Date(Date.now() + expiryHours * 3600 * 1000).toISOString(),
+    created_at: new Date().toISOString(),
+  };
+
+  adsList.unshift(newAd);
+  localStorage.setItem('rba_custom_ads', JSON.stringify(adsList));
+
+  return { success: true, ad: newAd };
+}
+
+export async function updateCustomAd(id: string, data: Partial<CustomAd>): Promise<{ success: boolean; ad: CustomAd }> {
+  try {
+    const res = await fetch(`${API_BASE}/ads/admin/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (res.ok) {
+      return res.json();
+    }
+  } catch (e) {
+    // Fallback to localStorage
+  }
+
+  const storedAds = localStorage.getItem('rba_custom_ads');
+  let adsList: CustomAd[] = storedAds ? JSON.parse(storedAds) : [];
+
+  let updatedAd: CustomAd | null = null;
+  adsList = adsList.map((item) => {
+    if (item.id === id) {
+      updatedAd = { ...item, ...data, updated_at: new Date().toISOString() };
+      return updatedAd;
+    }
+    return item;
+  });
+
+  localStorage.setItem('rba_custom_ads', JSON.stringify(adsList));
+  return { success: true, ad: updatedAd! };
+}
+
+export async function manageShareToken(
+  id: string,
+  data: { expiry_hours?: number; revoke?: boolean }
+): Promise<{ success: boolean; ad: CustomAd }> {
+  try {
+    const res = await fetch(`${API_BASE}/ads/admin/${id}/share-token`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (res.ok) {
+      return res.json();
+    }
+  } catch (e) {
+    // Fallback
+  }
+
+  const storedAds = localStorage.getItem('rba_custom_ads');
+  let adsList: CustomAd[] = storedAds ? JSON.parse(storedAds) : [];
+
+  let updatedAd: CustomAd | null = null;
+  adsList = adsList.map((item) => {
+    if (item.id === id) {
+      if (data.revoke) {
+        updatedAd = { ...item, share_token: undefined, token_expires_at: new Date().toISOString() };
+      } else {
+        const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        const hours = data.expiry_hours || 168;
+        updatedAd = {
+          ...item,
+          share_token: token,
+          token_expires_at: new Date(Date.now() + hours * 3600 * 1000).toISOString(),
+        };
+      }
+      return updatedAd;
+    }
+    return item;
+  });
+
+  localStorage.setItem('rba_custom_ads', JSON.stringify(adsList));
+  return { success: true, ad: updatedAd! };
+}
+
+export async function deleteCustomAd(id: string): Promise<void> {
+  try {
+    const res = await fetch(`${API_BASE}/ads/admin/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    if (res.ok) return;
+  } catch (e) {
+    // Fallback
+  }
+
+  const storedAds = localStorage.getItem('rba_custom_ads');
+  if (storedAds) {
+    const adsList: CustomAd[] = JSON.parse(storedAds);
+    const filtered = adsList.filter((item) => item.id !== id);
+    localStorage.setItem('rba_custom_ads', JSON.stringify(filtered));
+  }
+}
+
+export async function saveAdSettings(settings: Partial<AdSettings>): Promise<{ success: boolean; settings: AdSettings }> {
+  try {
+    const res = await fetch(`${API_BASE}/ads/admin/settings`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(settings),
+    });
+    if (res.ok) {
+      return res.json();
+    }
+  } catch (e) {
+    // Fallback
+  }
+
+  const storedSettings = localStorage.getItem('rba_ad_settings');
+  const defaultSettings: AdSettings = {
+    whatsapp_number: '+250783987223',
+    google_ads_per_custom_ad: 2,
+    enable_custom_ads: true,
+    enable_google_adsense: true,
+    default_share_expiry_hours: 168,
+    radio_ad_interval_seconds: 240,
+    radio_ad_countdown_seconds: 10,
+  };
+
+  const updated = {
+    ...defaultSettings,
+    ...(storedSettings ? JSON.parse(storedSettings) : {}),
+    ...settings,
+  };
+
+  localStorage.setItem('rba_ad_settings', JSON.stringify(updated));
+  return { success: true, settings: updated };
+}
+
 
 

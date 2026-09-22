@@ -221,6 +221,46 @@ export async function runMigrations() {
       );
     `);
 
+    // 15. Custom Ads Table (Sponsor ads managed via Admin Dashboard)
+    await query(`
+      CREATE TABLE IF NOT EXISTS custom_ads (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        title VARCHAR(255) NOT NULL,
+        sponsor_name VARCHAR(255) NOT NULL,
+        owner_phone VARCHAR(100) NOT NULL,
+        category VARCHAR(100) DEFAULT 'General',
+        tagline TEXT,
+        description TEXT,
+        cta_text VARCHAR(100) DEFAULT 'Learn More',
+        cta_url TEXT NOT NULL,
+        media_type VARCHAR(50) DEFAULT 'IMAGE',
+        banner_url TEXT,
+        bg_gradient VARCHAR(255) DEFAULT 'from-blue-900 via-blue-800 to-slate-900',
+        accent_color VARCHAR(50) DEFAULT '#0284c7',
+        badge_text VARCHAR(50) DEFAULT 'Sponsored',
+        status VARCHAR(50) DEFAULT 'ACTIVE',
+        start_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        end_date TIMESTAMP WITH TIME ZONE,
+        impressions_count INT DEFAULT 0,
+        clicks_count INT DEFAULT 0,
+        share_token VARCHAR(100) UNIQUE,
+        token_expires_at TIMESTAMP WITH TIME ZONE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
+
+    // 16. Ad Events Table (Granular impression and click telemetry for analytics)
+    await query(`
+      CREATE TABLE IF NOT EXISTS ad_events (
+        id BIGSERIAL PRIMARY KEY,
+        ad_id UUID REFERENCES custom_ads(id) ON DELETE CASCADE,
+        event_type VARCHAR(50) NOT NULL,
+        ip_address VARCHAR(100),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
+
     // Indexes
     await query(`CREATE INDEX IF NOT EXISTS idx_stations_active ON stations (is_active, display_order);`);
     await query(`CREATE INDEX IF NOT EXISTS idx_stations_slug ON stations (slug);`);
@@ -238,6 +278,9 @@ export async function runMigrations() {
     await query(`CREATE INDEX IF NOT EXISTS idx_donations_status ON donations (status, created_at DESC);`);
     await query(`CREATE INDEX IF NOT EXISTS idx_donations_tx_ref ON donations (tx_ref);`);
     await query(`CREATE INDEX IF NOT EXISTS idx_feedback_status ON feedback_messages (status, created_at DESC);`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_custom_ads_status ON custom_ads (status, created_at DESC);`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_custom_ads_share_token ON custom_ads (share_token);`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_ad_events_ad_id ON ad_events (ad_id, event_type, created_at);`);
 
     console.log('✅ Database migrations applied successfully.');
   } catch (error) {

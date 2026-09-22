@@ -193,3 +193,40 @@ export interface FeedbackMessage {
   ip_address?: string;
   created_at: string;
 }
+
+export interface CustomAd {
+  id: string;
+  title: string;
+  sponsor_name: string;
+  owner_phone: string;
+  category: string;
+  tagline?: string;
+  description?: string;
+  cta_text: string;
+  cta_url: string;
+  media_type: 'IMAGE' | 'GRADIENT' | 'VIDEO';
+  banner_url?: string;
+  bg_gradient?: string;
+  accent_color?: string;
+  badge_text?: string;
+  status: 'ACTIVE' | 'PAUSED' | 'EXPIRED';
+  start_date?: string;
+  end_date?: string;
+  impressions_count: number;
+  clicks_count: number;
+  share_token?: string;
+  token_expires_at?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface AdSettings {
+  whatsapp_number: string;
+  google_ads_per_custom_ad: number;
+  enable_custom_ads: boolean;
+  enable_google_adsense: boolean;
+  default_share_expiry_hours: number;
+  radio_ad_interval_seconds: number;
+  radio_ad_countdown_seconds: number;
+}
+
