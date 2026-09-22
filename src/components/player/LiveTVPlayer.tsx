@@ -18,8 +18,6 @@ import {
 import { Station } from '../../types';
 import { usePlayer } from '../../context/PlayerContext';
 import { trackEvent } from '../../services/api';
-import { TV_SPONSORED_ADS } from '../../data/tvAds';
-import { TVAdOverlay } from './TVAdOverlay';
 
 interface LiveTVPlayerProps {
   station: Station;
@@ -114,56 +112,7 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
     }
   };
 
-  // Sponsored Ad System
-  // First ad after 1 minute (60s), then every 5 minutes (300s) thereafter for 10s countdown
-  const [isAdActive, setIsAdActive] = useState<boolean>(false);
-  const [adCountdown, setAdCountdown] = useState<number>(10);
-  const [currentAdIndex, setCurrentAdIndex] = useState<number>(0);
-  const watchSecondsRef = useRef<number>(0);
-  const nextAdTargetRef = useRef<number>(60); // First ad at 60s (1 min)
 
-  // Track active watch time and trigger ad every 5 minutes after initial 1 minute
-  useEffect(() => {
-    // Only accumulate watch time when TV is actively playing and ad is not currently active
-    if (!isTvPlaying || isAdActive) return;
-
-    const watchTimer = setInterval(() => {
-      watchSecondsRef.current += 1;
-
-      if (watchSecondsRef.current >= nextAdTargetRef.current) {
-        // Schedule next ad in 5 minutes (300 seconds)
-        nextAdTargetRef.current = watchSecondsRef.current + 300;
-        // Cycle to next ad so every time it loads a different ad
-        setCurrentAdIndex((prev) => (prev + 1) % TV_SPONSORED_ADS.length);
-        setIsAdActive(true);
-        setAdCountdown(10);
-      }
-    }, 1000);
-
-    return () => clearInterval(watchTimer);
-  }, [isTvPlaying, isAdActive]);
-
-  // 10-second countdown for the active ad overlay (Live TV audio continues speaking)
-  useEffect(() => {
-    if (!isAdActive) return;
-
-    const countdownTimer = setInterval(() => {
-      setAdCountdown((prev) => {
-        if (prev <= 1) {
-          setIsAdActive(false);
-          return 10;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(countdownTimer);
-  }, [isAdActive]);
-
-  const handleCloseAd = () => {
-    setIsAdActive(false);
-    setAdCountdown(10);
-  };
 
   const loadStream = () => {
     const video = videoRef.current;
@@ -681,7 +630,7 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
       )}
 
       {/* Tap to Unmute Banner if browser blocked sound on initial autoplay */}
-      {isTvPlaying && isTvMuted && !isAdActive && (
+      {isTvPlaying && isTvMuted && (
         <button
           onClick={() => {
             if (videoRef.current) videoRef.current.muted = false;
@@ -692,17 +641,6 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
           <VolumeX className="w-4 h-4" />
           <span>Sound muted by browser • Tap to unmute</span>
         </button>
-      )}
-
-      {/* 10-Second Sponsored Ad Overlay (Live audio continues speaking in background) */}
-      {isAdActive && isTvPlaying && TV_SPONSORED_ADS[currentAdIndex] && (
-        <TVAdOverlay
-          ad={TV_SPONSORED_ADS[currentAdIndex]}
-          countdown={adCountdown}
-          totalDuration={10}
-          onClose={handleCloseAd}
-          stationName={station.name}
-        />
       )}
 
       {/* Bottom Controls Bar */}

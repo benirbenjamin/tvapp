@@ -19,10 +19,13 @@ export const ADS_CONFIG = {
   // Periodic TV Companion Ad Refresh interval (in seconds): 2.5 minutes (150s)
   TV_BANNER_REFRESH_SECONDS: 150,
 
-  // Interval for displaying the interstitial ad popup while watching TV (15 minutes)
-  POPUP_INTERVAL_SECONDS: 15 * 60, // 900 seconds
+  // TV Interstitial popup settings (Initial 1-min delay, 5-min repeat interval, 10s countdown)
+  TV_AD_INITIAL_DELAY_SECONDS: 60, // 1 minute initial delay
+  TV_AD_INTERVAL_SECONDS: 300, // 5 minutes repeat interval
+  TV_AD_COUNTDOWN_SECONDS: 10, // 10 seconds ad watch timer
 
-  // Required watch time before user can close the popup ad (10 seconds)
+  // Legacy fallback interval for general popup
+  POPUP_INTERVAL_SECONDS: 300,
   POPUP_COUNTDOWN_SECONDS: 10,
 
   // Ad slot IDs (Optional customizable slot IDs)

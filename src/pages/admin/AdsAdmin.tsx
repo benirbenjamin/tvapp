@@ -45,6 +45,9 @@ export const AdsAdminPage: React.FC = () => {
     default_share_expiry_hours: 168,
     radio_ad_interval_seconds: 240,
     radio_ad_countdown_seconds: 10,
+    tv_ad_initial_delay_seconds: 60,
+    tv_ad_interval_seconds: 300,
+    tv_ad_countdown_seconds: 10,
   });
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -764,8 +767,70 @@ export const AdsAdminPage: React.FC = () => {
                   </p>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block mb-1 font-bold">1st TV Ad Delay (Seconds)</label>
+                    <input
+                      type="number"
+                      min={10}
+                      value={settings.tv_ad_initial_delay_seconds || 60}
+                      onChange={(e) => setSettings({ ...settings, tv_ad_initial_delay_seconds: Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 font-bold text-xs"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      Default: <strong>60s (1 min)</strong> after starting TV play.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 font-bold">TV Ad Repeat Interval (Seconds)</label>
+                    <input
+                      type="number"
+                      min={30}
+                      value={settings.tv_ad_interval_seconds || 300}
+                      onChange={(e) => setSettings({ ...settings, tv_ad_interval_seconds: Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 font-bold text-xs"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      Default: <strong>300s (5 mins)</strong> repeat interval.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block mb-1 font-bold">TV Ad Duration Countdown (Seconds)</label>
+                    <input
+                      type="number"
+                      min={3}
+                      max={60}
+                      value={settings.tv_ad_countdown_seconds || 10}
+                      onChange={(e) => setSettings({ ...settings, tv_ad_countdown_seconds: Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 font-bold text-xs"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      Ad watch timer before user can skip/close TV ad.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 font-bold">Radio Pre-Roll Countdown (Seconds)</label>
+                    <input
+                      type="number"
+                      min={3}
+                      max={60}
+                      value={settings.radio_ad_countdown_seconds || 10}
+                      onChange={(e) => setSettings({ ...settings, radio_ad_countdown_seconds: Number(e.target.value) })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 font-bold text-xs"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      Ad timer before radio stream starts.
+                    </p>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block mb-1 font-bold">Radio Pre-Roll Ad Throttle Interval (Seconds)</label>
+                  <label className="block mb-1 font-bold">Radio Throttle Interval (Seconds)</label>
                   <input
                     type="number"
                     min={30}

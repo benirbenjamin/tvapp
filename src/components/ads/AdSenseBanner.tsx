@@ -22,6 +22,8 @@ interface AdSenseBannerProps {
   minHeight?: string;
   fallbackSponsored?: boolean;
   sponsorIndex?: number;
+  forceDisplayMode?: 'GOOGLE' | 'CUSTOM';
+  onAdLoaded?: () => void;
 }
 
 export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
@@ -33,6 +35,8 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
   refreshInterval = 0,
   label = 'Sponsored',
   fallbackSponsored = true,
+  forceDisplayMode,
+  onAdLoaded,
 }) => {
   const { getNextAdDisplayType, getRandomCustomAd, trackImpression, trackClick } = useAds();
 
@@ -47,7 +51,7 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
 
   // Initialize display mode (Google AdSense vs Custom Ad) on component mount/adKey change
   useEffect(() => {
-    const nextMode = getNextAdDisplayType();
+    const nextMode = forceDisplayMode || getNextAdDisplayType();
     setDisplayMode(nextMode);
 
     if (nextMode === 'CUSTOM') {
@@ -56,8 +60,9 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
       if (customAd) {
         trackImpression(customAd.id);
       }
+      if (onAdLoaded) onAdLoaded();
     }
-  }, [adKey]);
+  }, [adKey, forceDisplayMode]);
 
   // Push to adsbygoogle on mount when in GOOGLE mode
   useEffect(() => {
@@ -103,6 +108,7 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
       if (status === 'filled' && hasRenderedHeight) {
         setIsAdFilled(true);
         setShowFallback(false);
+        if (onAdLoaded) onAdLoaded();
       } else if (status === 'unfilled') {
         setIsAdFilled(false);
         if (fallbackSponsored) {
@@ -110,10 +116,12 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
           const customAd = getRandomCustomAd();
           setSelectedCustomAd(customAd);
           if (customAd) trackImpression(customAd.id);
+          if (onAdLoaded) onAdLoaded();
         }
       } else if (iframe && hasRenderedHeight) {
         setIsAdFilled(true);
         setShowFallback(false);
+        if (onAdLoaded) onAdLoaded();
       }
     };
 
@@ -128,6 +136,7 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
           const customAd = getRandomCustomAd();
           setSelectedCustomAd(customAd);
           if (customAd) trackImpression(customAd.id);
+          if (onAdLoaded) onAdLoaded();
         }
       }, 2500);
     }

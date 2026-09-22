@@ -38,6 +38,9 @@ const DEFAULT_SETTINGS: AdSettings = {
   default_share_expiry_hours: 168,
   radio_ad_interval_seconds: ADS_CONFIG.RADIO_AD_INTERVAL_SECONDS,
   radio_ad_countdown_seconds: ADS_CONFIG.RADIO_AD_COUNTDOWN_SECONDS,
+  tv_ad_initial_delay_seconds: ADS_CONFIG.TV_AD_INITIAL_DELAY_SECONDS,
+  tv_ad_interval_seconds: ADS_CONFIG.TV_AD_INTERVAL_SECONDS,
+  tv_ad_countdown_seconds: ADS_CONFIG.TV_AD_COUNTDOWN_SECONDS,
 };
 
 const AdContext = createContext<AdContextType | undefined>(undefined);
@@ -54,6 +57,7 @@ export const AdProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
   // Rotation Counter: Counts served ads to enforce N Google Ads -> 1 Custom Ad
   const servedAdCountRef = useRef<number>(0);
+  const hasTriggeredInitialTvAdRef = useRef<boolean>(false);
 
   // Radio Pre-roll state
   const [isRadioAdOpen, setIsRadioAdOpen] = useState<boolean>(false);
@@ -82,16 +86,26 @@ export const AdProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     (location.pathname === '/tv' && activeTvStation !== null) ||
     location.pathname.startsWith('/tv/');
 
-  // Timer: Accumulate TV watch time every second when watching TV
+  // Timer: Initial delay (e.g. 1 min) then repeat interval (e.g. 5 min)
   useEffect(() => {
     if (isPopupOpen) return;
-    if (!isWatchingTv) return;
+    if (!isWatchingTv) {
+      setTvWatchSeconds(0);
+      hasTriggeredInitialTvAdRef.current = false;
+      return;
+    }
+
+    const initialDelay = adSettings.tv_ad_initial_delay_seconds || 60;
+    const repeatInterval = adSettings.tv_ad_interval_seconds || 300;
+
+    const targetThreshold = hasTriggeredInitialTvAdRef.current ? repeatInterval : initialDelay;
 
     const interval = setInterval(() => {
       setTvWatchSeconds((prev) => {
         const next = prev + 1;
-        if (next >= (adSettings.radio_ad_interval_seconds || ADS_CONFIG.POPUP_INTERVAL_SECONDS)) {
+        if (next >= targetThreshold) {
           setIsPopupOpen(true);
+          hasTriggeredInitialTvAdRef.current = true;
           return 0; // Reset counter for next cycle
         }
         return next;

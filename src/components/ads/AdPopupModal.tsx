@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { X, Clock, Sparkles, Volume2 } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { X, Clock, Sparkles, Volume2, ShieldCheck } from 'lucide-react';
 import { ADS_CONFIG } from '../../config/ads';
+import { useAds } from '../../context/AdContext';
 import { AdSenseBanner } from './AdSenseBanner';
 
 interface AdPopupModalProps {
@@ -9,16 +10,40 @@ interface AdPopupModalProps {
 }
 
 export const AdPopupModal: React.FC<AdPopupModalProps> = ({ isOpen, onClose }) => {
-  const [countdown, setCountdown] = useState<number>(ADS_CONFIG.POPUP_COUNTDOWN_SECONDS);
+  const { adSettings } = useAds();
 
-  // When modal opens, reset countdown to 10 seconds and start ticking down
+  const initialSeconds = adSettings.tv_ad_countdown_seconds || ADS_CONFIG.TV_AD_COUNTDOWN_SECONDS || 10;
+
+  const [countdown, setCountdown] = useState<number>(initialSeconds);
+  const [isAdLoaded, setIsAdLoaded] = useState<boolean>(false);
+  const timerStartedRef = useRef<boolean>(false);
+
+  // Reset when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
-      setCountdown(ADS_CONFIG.POPUP_COUNTDOWN_SECONDS);
+      setCountdown(initialSeconds);
+      setIsAdLoaded(false);
+      timerStartedRef.current = false;
       return;
     }
 
-    setCountdown(ADS_CONFIG.POPUP_COUNTDOWN_SECONDS);
+    setCountdown(initialSeconds);
+    setIsAdLoaded(false);
+    timerStartedRef.current = false;
+
+    // Safety fallback: if Google AdSense or ad blocker takes more than 2.5s, start timer anyway
+    const fallbackTimer = setTimeout(() => {
+      setIsAdLoaded(true);
+    }, 2500);
+
+    return () => clearTimeout(fallbackTimer);
+  }, [isOpen, initialSeconds]);
+
+  // Start countdown ticking ONLY after ad is loaded
+  useEffect(() => {
+    if (!isOpen || !isAdLoaded || timerStartedRef.current) return;
+
+    timerStartedRef.current = true;
 
     const interval = setInterval(() => {
       setCountdown((prev) => {
@@ -31,90 +56,114 @@ export const AdPopupModal: React.FC<AdPopupModalProps> = ({ isOpen, onClose }) =
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isOpen]);
+  }, [isOpen, isAdLoaded]);
 
   if (!isOpen) return null;
 
   const canClose = countdown === 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn select-none">
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-scaleUp">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fadeIn select-none">
+      <div className="relative w-full max-w-lg max-h-[88vh] bg-slate-900 text-white rounded-3xl shadow-2xl border border-slate-700 flex flex-col overflow-hidden animate-scaleUp">
         
         {/* Top Header Bar */}
-        <div className="px-5 py-3.5 bg-gradient-to-r from-rba-navy to-rba-navyLight text-white flex items-center justify-between">
+        <div className="px-5 py-3.5 bg-gradient-to-r from-rba-navy via-slate-900 to-rba-navy text-white flex items-center justify-between shrink-0 border-b border-slate-800">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
             <span className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-rba-yellow" />
-              Advertisement
+              Google AdSense Broadcast
             </span>
           </div>
 
-          {/* 10-Second Counter & Close Button */}
+          {/* Top Close / Countdown Button */}
           <div className="flex items-center gap-2">
-            {!canClose ? (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 border border-white/20 text-xs font-bold text-rba-yellow backdrop-blur-sm">
+            {!isAdLoaded ? (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300">
+                <div className="w-3 h-3 border-2 border-rba-yellow border-t-transparent rounded-full animate-spin" />
+                <span>Loading Ad...</span>
+              </div>
+            ) : !canClose ? (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 border border-rba-yellow/40 text-xs font-black text-rba-yellow backdrop-blur-sm">
                 <Clock className="w-3.5 h-3.5 animate-pulse" />
-                <span>Close in {countdown}s</span>
+                <span>Skip in {countdown}s</span>
               </div>
             ) : (
               <button
                 onClick={onClose}
-                className="flex items-center gap-1 px-3.5 py-1 rounded-full bg-rba-yellow hover:bg-amber-400 text-rba-dark font-extrabold text-xs shadow-lg transition-all hover:scale-105 active:scale-95"
-                aria-label="Close Advertisement"
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white font-black text-xs shadow-lg transition-transform hover:scale-105 active:scale-95 border border-red-400"
+                aria-label="Skip Ad Now"
               >
-                <X className="w-3.5 h-3.5 stroke-[3]" />
-                <span>Close Ad</span>
+                <X className="w-4 h-4 stroke-[3]" />
+                <span>SKIP AD NOW</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-6 text-center space-y-4">
-          <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 font-medium">
-            <Volume2 className="w-3.5 h-3.5 text-rba-blue" />
-            <span>TV broadcast is continuing in the background</span>
+        {/* Scrollable Modal Body */}
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
+          <div className="flex items-center justify-center gap-2 text-xs text-slate-400 font-semibold bg-slate-800/60 py-1.5 px-3 rounded-xl border border-slate-700/50">
+            <Volume2 className="w-4 h-4 text-sky-400 shrink-0" />
+            <span className="truncate">Live stream is playing smoothly in background</span>
           </div>
 
-          {/* AdSense Unit */}
-          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200/90 shadow-inner flex flex-col items-center justify-center min-h-[280px]">
+          {/* Forced Google AdSense Display */}
+          <div className="bg-slate-950 rounded-2xl p-3 border border-slate-800 shadow-inner flex flex-col items-center justify-center min-h-[260px] relative">
+            {!isAdLoaded && (
+              <div className="absolute inset-0 z-10 bg-slate-950/90 backdrop-blur-xs flex flex-col items-center justify-center space-y-3 p-4 text-center">
+                <div className="w-8 h-8 border-4 border-rba-yellow border-t-transparent rounded-full animate-spin" />
+                <p className="text-xs font-bold text-slate-300">Serving Google AdSense advertisement...</p>
+              </div>
+            )}
+
             <AdSenseBanner
               slot={ADS_CONFIG.SLOTS.POPUP_INTERSTITIAL}
               format="rectangle"
               responsive={true}
               minHeight="250px"
-              label="Sponsored Partner"
+              label="Google AdSense Partner"
+              forceDisplayMode="GOOGLE"
+              onAdLoaded={() => setIsAdLoaded(true)}
             />
           </div>
 
-          {/* Bottom Notice & Action */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-            <span>Benix Space TV • Streaming Partner Network</span>
-
-            <button
-              onClick={canClose ? onClose : undefined}
-              disabled={!canClose}
-              className={`w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
-                canClose
-                  ? 'bg-rba-blue hover:bg-rba-navy text-white shadow-md cursor-pointer hover:scale-102'
-                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-              }`}
-            >
-              {canClose ? (
-                <>
-                  <X className="w-4 h-4" />
-                  <span>Continue Watching TV</span>
-                </>
-              ) : (
-                <>
-                  <Clock className="w-4 h-4 text-slate-400" />
-                  <span>Please wait {countdown} seconds...</span>
-                </>
-              )}
-            </button>
+          <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium pt-1">
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              Benix Space TV Verified Network
+            </span>
+            <span>Worldwide Delivery</span>
           </div>
+        </div>
+
+        {/* Fixed Bottom Action Bar */}
+        <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-3 shrink-0">
+          <span className="text-xs text-slate-400 font-bold hidden sm:block">
+            {!isAdLoaded ? 'Preparing ad...' : !canClose ? `Skip available in ${countdown}s` : 'Ad complete'}
+          </span>
+
+          <button
+            onClick={canClose ? onClose : undefined}
+            disabled={!canClose}
+            className={`w-full sm:w-auto px-6 py-3 rounded-2xl font-black text-xs transition-all flex items-center justify-center gap-2 ${
+              canClose
+                ? 'bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white shadow-xl cursor-pointer hover:scale-102 active:scale-98 border border-amber-400/40'
+                : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+            }`}
+          >
+            {canClose ? (
+              <>
+                <X className="w-4 h-4 stroke-[3]" />
+                <span>CLOSE AD & WATCH TV</span>
+              </>
+            ) : (
+              <>
+                <Clock className="w-4 h-4 text-slate-400" />
+                <span>Please wait {countdown}s...</span>
+              </>
+            )}
+          </button>
         </div>
 
       </div>

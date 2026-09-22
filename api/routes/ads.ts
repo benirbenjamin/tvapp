@@ -14,6 +14,9 @@ const DEFAULT_AD_SETTINGS = {
   default_share_expiry_hours: 168, // 7 days
   radio_ad_interval_seconds: 240, // 4 minutes throttle
   radio_ad_countdown_seconds: 10,
+  tv_ad_initial_delay_seconds: 60, // 1 minute after start
+  tv_ad_interval_seconds: 300, // 5 minutes interval
+  tv_ad_countdown_seconds: 10,
 };
 
 // Helper: Get ad settings from site_settings table or fallback to default

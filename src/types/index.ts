@@ -228,5 +228,8 @@ export interface AdSettings {
   default_share_expiry_hours: number;
   radio_ad_interval_seconds: number;
   radio_ad_countdown_seconds: number;
+  tv_ad_initial_delay_seconds: number;
+  tv_ad_interval_seconds: number;
+  tv_ad_countdown_seconds: number;
 }
 

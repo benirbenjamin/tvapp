@@ -443,6 +443,9 @@ export async function getPublicAds(): Promise<{ settings: AdSettings; ads: Custo
     default_share_expiry_hours: 168,
     radio_ad_interval_seconds: 240,
     radio_ad_countdown_seconds: 10,
+    tv_ad_initial_delay_seconds: 60,
+    tv_ad_interval_seconds: 300,
+    tv_ad_countdown_seconds: 10,
   };
 
   return {
@@ -498,6 +501,9 @@ export async function getAdminAds(): Promise<{ ads: CustomAd[]; settings: AdSett
     default_share_expiry_hours: 168,
     radio_ad_interval_seconds: 240,
     radio_ad_countdown_seconds: 10,
+    tv_ad_initial_delay_seconds: 60,
+    tv_ad_interval_seconds: 300,
+    tv_ad_countdown_seconds: 10,
   };
 
   return {
@@ -672,6 +678,9 @@ export async function saveAdSettings(settings: Partial<AdSettings>): Promise<{ s
     default_share_expiry_hours: 168,
     radio_ad_interval_seconds: 240,
     radio_ad_countdown_seconds: 10,
+    tv_ad_initial_delay_seconds: 60,
+    tv_ad_interval_seconds: 300,
+    tv_ad_countdown_seconds: 10,
   };
 
   const updated = {
