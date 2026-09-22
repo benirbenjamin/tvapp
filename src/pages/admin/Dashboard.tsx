@@ -97,6 +97,8 @@ export const DashboardPage: React.FC = () => {
               PostgreSQL Telemetry Live
             </span>
           </div>
+        </div>
+
         {/* Unread Feedback Alert Callout */}
         {feedbackStats.unread > 0 && (
           <div className="p-4 rounded-2xl bg-gradient-to-r from-red-500 via-rose-500 to-pink-600 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
