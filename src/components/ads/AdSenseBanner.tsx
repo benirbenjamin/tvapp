@@ -245,7 +245,7 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
     }
 
     // No custom ads configured yet -> Render "Advertise Here" WhatsApp Card!
-    return <AdvertiseHereCard className={className} />;
+    return <AdvertiseHereCard className={className} variant={format === 'rectangle' ? 'modal' : 'banner'} />;
   }
 
   // RENDER GOOGLE ADSENSE

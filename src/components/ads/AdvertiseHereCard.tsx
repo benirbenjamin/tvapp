@@ -4,7 +4,7 @@ import { ADS_CONFIG } from '../../config/ads';
 
 interface AdvertiseHereCardProps {
   className?: string;
-  variant?: 'banner' | 'card' | 'compact';
+  variant?: 'banner' | 'card' | 'compact' | 'modal';
 }
 
 export const AdvertiseHereCard: React.FC<AdvertiseHereCardProps> = ({
@@ -14,6 +14,40 @@ export const AdvertiseHereCard: React.FC<AdvertiseHereCardProps> = ({
   const whatsappUrl = `https://wa.me/${ADS_CONFIG.WHATSAPP_NUMBER.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
     'Hello! I am interested in advertising my business/brand on Benix Space TV. Please share pricing and available banner slots.'
   )}`;
+
+  if (variant === 'modal') {
+    return (
+      <div className={`w-full max-w-[320px] p-4 rounded-2xl bg-gradient-to-br from-rba-navy via-slate-900 to-indigo-950 text-white shadow-lg border border-rba-yellow/40 flex flex-col items-center justify-center text-center space-y-3 ${className}`}>
+        <div className="flex items-center gap-1.5 text-rba-yellow text-[10px] font-black uppercase tracking-wider">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Advertising Opportunity</span>
+        </div>
+
+        <div className="space-y-1">
+          <h4 className="font-black text-sm text-white leading-tight">
+            Promote Your Brand Here
+          </h4>
+          <p className="text-[11px] text-slate-300 leading-snug">
+            Reach thousands of daily viewers on Benix Space TV & Radio.
+          </p>
+        </div>
+
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs shadow-md transition-transform hover:scale-105 active:scale-95"
+        >
+          <MessageCircle className="w-4 h-4 fill-current" />
+          <span>Advertise Here on WhatsApp</span>
+        </a>
+
+        <p className="text-[9px] text-slate-400 font-semibold">
+          Direct Partner Spot • {ADS_CONFIG.WHATSAPP_NUMBER}
+        </p>
+      </div>
+    );
+  }
 
   if (variant === 'compact') {
     return (
