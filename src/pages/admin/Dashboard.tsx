@@ -120,6 +120,26 @@ export const DashboardPage: React.FC = () => {
           </div>
         )}
 
+        {/* Coffee Blessings Quick Banner */}
+        <div className="p-5 rounded-3xl bg-gradient-to-r from-amber-600 via-amber-500 to-orange-600 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-black/20 backdrop-blur-md flex items-center justify-center text-2xl shrink-0 shadow-inner">
+              ☕
+            </div>
+            <div>
+              <h3 className="font-black text-base tracking-tight">Coffee Blessings & Supporter Portal</h3>
+              <p className="text-xs text-amber-100">Confidential admin view for supporter blessings, gifts, and direct WhatsApp thank-you notes.</p>
+            </div>
+          </div>
+          <Link
+            to="/admin/donations"
+            className="px-5 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 text-amber-300 font-extrabold text-xs transition-transform hover:scale-105 shadow-md shrink-0 flex items-center gap-1.5"
+          >
+            <span>Check Coffee Blessings ☕</span>
+            <span>→</span>
+          </Link>
+        </div>
+
 
         {/* Section 1: Visitor Stats Grid */}
         <div>

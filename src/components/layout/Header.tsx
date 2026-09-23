@@ -50,50 +50,6 @@ export const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-40 bg-rba-navy text-white border-b border-rba-navyLight shadow-md">
-      {/* Top Live Bar */}
-      <div className="bg-rba-dark/60 border-b border-white/5 px-4 sm:px-6 py-1 text-[11px] text-slate-300 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5 font-semibold text-rba-yellow">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-            ON AIR NOW
-          </span>
-          <span className="hidden sm:inline text-slate-400">|</span>
-          <Link to="/tv" className="hover:text-white transition-colors flex items-center gap-1">
-            <Tv className="w-3 h-3 text-rba-blue" /> Live TV Channels
-          </Link>
-          <span className="hidden sm:inline text-slate-400">|</span>
-          <Link to="/radio" className="hover:text-white transition-colors flex items-center gap-1">
-            <Radio className="w-3 h-3 text-rba-yellow" /> Radio Broadcasts
-          </Link>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {isPlaying && currentStation && (
-            <div className="flex items-center gap-1.5 text-xs text-rba-blueLight font-medium">
-              <Volume2 className="w-3.5 h-3.5 animate-pulse text-rba-yellow" />
-              <span className="hidden md:inline">Playing:</span> {currentStation.name}
-            </div>
-          )}
-          
-          <button
-            onClick={() => openCoffeeModal(1)}
-            className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 text-[11px] transition-colors bg-amber-400/10 hover:bg-amber-400/20 px-2 py-0.5 rounded-lg border border-amber-400/30"
-          >
-            <span>☕ Buy Coffee</span>
-          </button>
-
-          {/* Only show Admin Portal if already logged in as staff */}
-          {isAdmin && (
-            <Link
-              to="/admin"
-              className="text-rba-yellow hover:underline font-bold flex items-center gap-1 text-[11px]"
-            >
-              <ShieldAlert className="w-3 h-3" /> Admin Portal
-            </Link>
-          )}
-        </div>
-      </div>
-
       {/* Main Navigation Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-4">
         {/* Brand Logo */}

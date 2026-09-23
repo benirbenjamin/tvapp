@@ -43,9 +43,11 @@ import { ProfileAdminPage } from './pages/admin/ProfileAdmin';
 import { CommentsModerationAdminPage } from './pages/admin/CommentsModerationAdmin';
 import { FeedbackAdminPage } from './pages/admin/FeedbackAdmin';
 import { AdsAdminPage } from './pages/admin/AdsAdmin';
+import { DonationsAdminPage } from './pages/admin/DonationsAdmin';
 import { PublicAdAnalyticsPage } from './pages/PublicAdAnalytics';
 import { RadioAdModal } from './components/ads/RadioAdModal';
 import { NotFoundPage } from './pages/NotFound';
+import { initSecurityGuard } from './utils/security';
 
 
 // Protected Route Helpers
@@ -115,6 +117,10 @@ const GlobalRadioAdModal: React.FC = () => {
 };
 
 export const App: React.FC = () => {
+  React.useEffect(() => {
+    initSecurityGuard();
+  }, []);
+
   return (
     <Router>
       <AuthProvider>
@@ -178,6 +184,14 @@ export const App: React.FC = () => {
                           element={
                             <ProtectedAdminRoute>
                               <FeedbackAdminPage />
+                            </ProtectedAdminRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/donations"
+                          element={
+                            <ProtectedAdminRoute>
+                              <DonationsAdminPage />
                             </ProtectedAdminRoute>
                           }
                         />

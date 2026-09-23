@@ -492,42 +492,6 @@ export const BuyCoffeeModal: React.FC = () => {
 
             </form>
           )}
-
-          {/* Recent Supporters Section */}
-          {recentSupporters.length > 0 && !successData && (
-            <div className="pt-4 border-t border-white/10">
-              <h5 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <Heart className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                Recent Stream Supporters
-              </h5>
-              <div className="space-y-2 max-h-36 overflow-y-auto custom-scrollbar pr-1">
-                {recentSupporters.slice(0, 5).map((sup, idx) => (
-                  <div
-                    key={idx}
-                    className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between text-xs"
-                  >
-                    <div>
-                      <div className="font-bold text-white flex items-center gap-1.5">
-                        <span>{sup.donor_name}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-medium">
-                          {sup.coffee_cups} ☕
-                        </span>
-                      </div>
-                      {sup.message && (
-                        <p className="text-[11px] text-slate-400 italic line-clamp-1 mt-0.5">
-                          "{sup.message}"
-                        </p>
-                      )}
-                    </div>
-                    <span className="text-[11px] font-semibold text-slate-300 shrink-0 ml-2">
-                      {sup.amount.toLocaleString()} {sup.currency}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
         </div>
       </div>
     </div>

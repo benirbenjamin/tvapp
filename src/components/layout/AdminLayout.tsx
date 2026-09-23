@@ -19,6 +19,7 @@ import {
   Inbox,
   Mail,
   Megaphone,
+  Coffee,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -51,6 +52,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const navItems = [
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, exact: true },
+    { name: 'Coffee Blessings ☕', path: '/admin/donations', icon: Coffee },
     { name: 'Feedback & Inquiries', path: '/admin/feedback', icon: Inbox, badge: unreadFeedback },
     { name: 'Custom Ads Engine', path: '/admin/ads', icon: Megaphone },
     { name: 'Stations & Live Streams', path: '/admin/stations', icon: Radio },
