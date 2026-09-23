@@ -123,9 +123,17 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setIsBuffering(false);
     setCurrentStation(station);
 
-    const streamUrl = station.stream_url.includes('?')
-      ? `${station.stream_url}&_t=${Date.now()}`
-      : `${station.stream_url}?_t=${Date.now()}`;
+    let streamUrl = station.stream_url;
+
+    // Automatic Mixed Content Proxy:
+    // If site is loaded over HTTPS and station stream is HTTP, route through backend audio proxy
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:' && streamUrl.startsWith('http:')) {
+      streamUrl = `/api/stations/proxy-stream?url=${encodeURIComponent(streamUrl)}`;
+    } else {
+      streamUrl = streamUrl.includes('?')
+        ? `${streamUrl}&_t=${Date.now()}`
+        : `${streamUrl}?_t=${Date.now()}`;
+    }
 
     audioRef.current.src = streamUrl;
     audioRef.current.load();

@@ -15,6 +15,53 @@ function slugify(text: string): string {
     .replace(/\-\-+/g, '-');
 }
 
+// GET /api/stations/proxy-stream (public HTTP audio stream proxy to resolve HTTPS Mixed Content)
+router.get('/proxy-stream', async (req: Request, res: Response): Promise<void> => {
+  const rawUrl = req.query.url;
+  if (!rawUrl || typeof rawUrl !== 'string') {
+    res.status(400).send('Stream URL parameter is required.');
+    return;
+  }
+
+  try {
+    const upstreamRes = await fetch(rawUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) BenixRadio/1.0',
+        'Accept': '*/*',
+      },
+    });
+
+    if (!upstreamRes.ok && upstreamRes.status !== 206) {
+      res.status(upstreamRes.status).send(`Upstream audio server error: ${upstreamRes.statusText}`);
+      return;
+    }
+
+    const contentType = upstreamRes.headers.get('content-type') || 'audio/mpeg';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    if (upstreamRes.body) {
+      const reader = upstreamRes.body.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          res.write(value);
+        }
+        res.end();
+      } catch {
+        res.end();
+      }
+    } else {
+      res.status(500).send('No audio data stream available');
+    }
+  } catch (err: any) {
+    console.error('Audio proxy streaming error:', err);
+    res.status(502).send('Error connecting to remote HTTP radio server.');
+  }
+});
+
 // GET /api/stations (public)
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
