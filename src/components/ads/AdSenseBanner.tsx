@@ -26,6 +26,23 @@ interface AdSenseBannerProps {
   onAdLoaded?: () => void;
 }
 
+const FAKE_PLACEHOLDER_SLOTS = [
+  '1234567890',
+  '2345678901',
+  '3456789012',
+  '4567890123',
+  '5678901234',
+  '0000000000',
+];
+
+const isValidAdSlot = (slotId?: string): boolean => {
+  if (!slotId) return false;
+  const trimmed = slotId.trim();
+  if (!trimmed) return false;
+  if (FAKE_PLACEHOLDER_SLOTS.includes(trimmed)) return false;
+  return true;
+};
+
 export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
   slot = ADS_CONFIG.SLOTS.TV_COMPANION_BANNER,
   format = 'auto',
@@ -49,6 +66,8 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
   const insRef = useRef<HTMLModElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  const validSlot = isValidAdSlot(slot) ? slot : undefined;
+
   // Initialize display mode (Google AdSense vs Custom Ad) on component mount/adKey change
   useEffect(() => {
     const nextMode = forceDisplayMode || getNextAdDisplayType();
@@ -68,7 +87,17 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
   useEffect(() => {
     if (displayMode !== 'GOOGLE') return;
 
-    console.log(`[Google AdSense] Initializing ad request for slot "${slot}" (Client: ${ADS_CONFIG.CLIENT_ID}, Format: ${format})`);
+    if (slot && !validSlot) {
+      console.warn(
+        `[Google AdSense WARN] Slot ID "${slot}" is a placeholder or invalid. Omitting data-ad-slot attribute to avoid Google DoubleClick HTTP 400 Bad Request error. ` +
+        `To use a specific Ad Unit, replace this slot ID in src/config/ads.ts with a valid 10-digit Ad Unit ID from your Google AdSense Dashboard.`
+      );
+    }
+
+    console.log(
+      `[Google AdSense] Requesting ad for Publisher "${ADS_CONFIG.CLIENT_ID}" ` +
+      (validSlot ? `(Slot: "${validSlot}", Format: ${format})` : `(Auto-Ad mode without fixed slot, Format: ${format})`)
+    );
 
     if (typeof window === 'undefined') return;
 
@@ -84,20 +113,20 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
         try {
           if (typeof window !== 'undefined') {
             (window.adsbygoogle = window.adsbygoogle || []).push({});
-            console.log(`[Google AdSense] Successfully pushed ({}) to window.adsbygoogle for slot "${slot}".`);
+            console.log(`[Google AdSense] Successfully pushed ({}) to window.adsbygoogle queue.`);
           }
         } catch (err: any) {
-          console.error(`[Google AdSense ERROR] Failed to push to adsbygoogle queue for slot "${slot}":`, err?.message || err);
+          console.error(`[Google AdSense ERROR] Failed to push to adsbygoogle queue:`, err?.message || err);
         }
       }, 150);
     } catch (e: any) {
-      console.error(`[Google AdSense ERROR] Unexpected error during timeout init for slot "${slot}":`, e);
+      console.error(`[Google AdSense ERROR] Unexpected error during timeout init:`, e);
     }
 
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [adKey, displayMode, slot, format]);
+  }, [adKey, displayMode, slot, validSlot, format]);
 
   // Check if Google AdSense has truly filled with visible rendered height
   useEffect(() => {
@@ -295,7 +324,7 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
           className="adsbygoogle w-full block"
           style={{ display: 'block', width: '100%', minHeight: '90px', ...style }}
           data-ad-client={ADS_CONFIG.CLIENT_ID}
-          data-ad-slot={slot}
+          {...(validSlot ? { 'data-ad-slot': validSlot } : {})}
           data-ad-format={format}
           data-full-width-responsive={responsive ? 'true' : 'false'}
         />

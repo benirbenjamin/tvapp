@@ -28,12 +28,14 @@ export const ADS_CONFIG = {
   POPUP_INTERVAL_SECONDS: 300,
   POPUP_COUNTDOWN_SECONDS: 10,
 
-  // Ad slot IDs (Optional customizable slot IDs)
+  // Google AdSense Ad Slot IDs
+  // NOTE: Replace these empty strings with actual 10-digit Ad Unit IDs created in your Google AdSense Dashboard (https://adsense.google.com -> Ads -> By ad unit).
+  // If left empty, Google AdSense will serve auto/responsive display ads for your publisher ID (ca-pub-4078466828008985).
   SLOTS: {
-    TV_COMPANION_BANNER: '1234567890',
-    POPUP_INTERSTITIAL: '2345678901',
-    IN_FEED_BANNER: '3456789012',
-    RADIO_PREROLL: '4567890123',
-    SIDEBAR_BANNER: '5678901234',
+    TV_COMPANION_BANNER: '', // e.g. '9876543210'
+    POPUP_INTERSTITIAL: '',
+    IN_FEED_BANNER: '',
+    RADIO_PREROLL: '',
+    SIDEBAR_BANNER: '',
   },
 } as const;
