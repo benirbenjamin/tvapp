@@ -123,7 +123,12 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setIsBuffering(false);
     setCurrentStation(station);
 
-    let streamUrl = station.stream_url;
+    let streamUrl = station.stream_url.trim();
+
+    // Auto-format Shoutcast streams (e.g. http://ip:port/ -> http://ip:port/;stream.mp3)
+    if (/:\d+\/?$/.test(streamUrl) && !streamUrl.endsWith(';') && !streamUrl.endsWith('.mp3')) {
+      streamUrl = streamUrl.endsWith('/') ? `${streamUrl};stream.mp3` : `${streamUrl}/;stream.mp3`;
+    }
 
     // Automatic Mixed Content Proxy:
     // If site is loaded over HTTPS and station stream is HTTP, route through backend audio proxy

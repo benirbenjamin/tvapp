@@ -15,7 +15,7 @@ function slugify(text: string): string {
     .replace(/\-\-+/g, '-');
 }
 
-// GET /api/stations/proxy-stream (public HTTP audio stream proxy to resolve HTTPS Mixed Content)
+// GET /api/stations/proxy-stream (public HTTP audio stream proxy to resolve HTTPS Mixed Content & Shoutcast format)
 router.get('/proxy-stream', async (req: Request, res: Response): Promise<void> => {
   const rawUrl = req.query.url;
   if (!rawUrl || typeof rawUrl !== 'string') {
@@ -23,10 +23,17 @@ router.get('/proxy-stream', async (req: Request, res: Response): Promise<void> =
     return;
   }
 
+  let targetUrl = rawUrl;
+  // Shoutcast URL auto-formatting: if ends with port or /, append ; for raw audio stream
+  if (/:\d+\/?$/.test(targetUrl) && !targetUrl.endsWith(';')) {
+    targetUrl = targetUrl.endsWith('/') ? `${targetUrl};` : `${targetUrl}/;`;
+  }
+
   try {
-    const upstreamRes = await fetch(rawUrl, {
+    const upstreamRes = await fetch(targetUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) BenixRadio/1.0',
+        'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
+        'Icy-MetaData': '1',
         'Accept': '*/*',
       },
     });
@@ -36,7 +43,11 @@ router.get('/proxy-stream', async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const contentType = upstreamRes.headers.get('content-type') || 'audio/mpeg';
+    let contentType = upstreamRes.headers.get('content-type') || 'audio/mpeg';
+    if (contentType.includes('text/html') || contentType.includes('text/plain')) {
+      contentType = 'audio/mpeg';
+    }
+
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Access-Control-Allow-Origin', '*');
