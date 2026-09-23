@@ -1,4 +1,4 @@
-const CACHE_NAME = 'benix-tv-v4';
+const CACHE_NAME = 'benix-tv-v5';
 
 // Install Event - skip waiting immediately
 self.addEventListener('install', (event) => {
