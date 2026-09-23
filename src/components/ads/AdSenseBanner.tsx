@@ -68,25 +68,36 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
   useEffect(() => {
     if (displayMode !== 'GOOGLE') return;
 
+    console.log(`[Google AdSense] Initializing ad request for slot "${slot}" (Client: ${ADS_CONFIG.CLIENT_ID}, Format: ${format})`);
+
+    if (typeof window === 'undefined') return;
+
+    if (!window.adsbygoogle) {
+      console.warn(
+        `[Google AdSense WARN] window.adsbygoogle is undefined! The script may be blocked by an AdBlocker, Brave Shields, network filter, or is still downloading.`
+      );
+    }
+
     let timer: any = null;
     try {
       timer = setTimeout(() => {
         try {
           if (typeof window !== 'undefined') {
             (window.adsbygoogle = window.adsbygoogle || []).push({});
+            console.log(`[Google AdSense] Successfully pushed ({}) to window.adsbygoogle for slot "${slot}".`);
           }
-        } catch (err) {
-          // Ad blocker or sandboxed environment
+        } catch (err: any) {
+          console.error(`[Google AdSense ERROR] Failed to push to adsbygoogle queue for slot "${slot}":`, err?.message || err);
         }
       }, 150);
-    } catch (e) {
-      // Ignore
+    } catch (e: any) {
+      console.error(`[Google AdSense ERROR] Unexpected error during timeout init for slot "${slot}":`, e);
     }
 
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [adKey, displayMode]);
+  }, [adKey, displayMode, slot, format]);
 
   // Check if Google AdSense has truly filled with visible rendered height
   useEffect(() => {
@@ -106,10 +117,20 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
         insElement.offsetHeight > 30;
 
       if (status === 'filled' && hasRenderedHeight) {
+        console.log(`[Google AdSense SUCCESS] Ad filled and rendered successfully for slot "${slot}".`);
         setIsAdFilled(true);
         setShowFallback(false);
         if (onAdLoaded) onAdLoaded();
       } else if (status === 'unfilled') {
+        console.warn(
+          `[Google AdSense WARN] Google returned data-ad-status="unfilled" for slot "${slot}".\n` +
+          `  Possible causes:\n` +
+          `  1. Slot ID "${slot}" is a placeholder or not created in Google AdSense Publisher Account (${ADS_CONFIG.CLIENT_ID}).\n` +
+          `  2. Domain (e.g. localhost or unapproved domain) is not authorized in AdSense Dashboard.\n` +
+          `  3. Publisher account is pending review or disabled.\n` +
+          `  4. No ad inventory available for this region.\n` +
+          `  -> Falling back to Custom Sponsor Ad / Contact Card.`
+        );
         setIsAdFilled(false);
         if (fallbackSponsored) {
           setShowFallback(true);
@@ -119,6 +140,7 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
           if (onAdLoaded) onAdLoaded();
         }
       } else if (iframe && hasRenderedHeight) {
+        console.log(`[Google AdSense SUCCESS] Rendered ad iframe detected for slot "${slot}".`);
         setIsAdFilled(true);
         setShowFallback(false);
         if (onAdLoaded) onAdLoaded();
@@ -132,6 +154,11 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
     if (fallbackSponsored) {
       timeoutTimer = setTimeout(() => {
         if (!isAdFilled) {
+          const currentStatus = insElement.getAttribute('data-ad-status');
+          console.warn(
+            `[Google AdSense TIMEOUT] Slot "${slot}" did not render an ad within 2.5s (data-ad-status: "${currentStatus || 'none'}"). ` +
+            `Falling back to Custom Sponsor Ad.`
+          );
           setShowFallback(true);
           const customAd = getRandomCustomAd();
           setSelectedCustomAd(customAd);
@@ -167,7 +194,7 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
       observer.disconnect();
       if (resizeObserver) resizeObserver.disconnect();
     };
-  }, [adKey, fallbackSponsored, isAdFilled, displayMode]);
+  }, [adKey, fallbackSponsored, isAdFilled, displayMode, slot]);
 
   // Periodic Refresh
   useEffect(() => {
@@ -249,23 +276,6 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
   }
 
   // RENDER GOOGLE ADSENSE
-  if (!isAdFilled && !showFallback) {
-    return (
-      <div className="hidden h-0 w-0 p-0 m-0 border-0 overflow-hidden" aria-hidden="true">
-        <ins
-          key={adKey}
-          ref={insRef}
-          className="adsbygoogle"
-          style={{ display: 'none' }}
-          data-ad-client={ADS_CONFIG.CLIENT_ID}
-          data-ad-slot={slot}
-          data-ad-format={format}
-          data-full-width-responsive={responsive ? 'true' : 'false'}
-        />
-      </div>
-    );
-  }
-
   return (
     <div
       ref={containerRef}
@@ -276,14 +286,14 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
       </div>
 
       <div
-        className="w-full rounded-2xl bg-white/95 border border-slate-200/80 p-2 shadow-sm flex items-center justify-center overflow-hidden"
-        style={style}
+        className="w-full rounded-2xl bg-white/95 border border-slate-200/80 p-2 shadow-sm flex items-center justify-center overflow-hidden min-h-[90px] relative"
+        style={{ minHeight: '90px', ...style }}
       >
         <ins
           key={adKey}
           ref={insRef}
           className="adsbygoogle w-full block"
-          style={{ display: 'block', width: '100%', ...style }}
+          style={{ display: 'block', width: '100%', minHeight: '90px', ...style }}
           data-ad-client={ADS_CONFIG.CLIENT_ID}
           data-ad-slot={slot}
           data-ad-format={format}
