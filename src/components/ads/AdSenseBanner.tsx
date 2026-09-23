@@ -264,71 +264,66 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
     return () => clearInterval(interval);
   }, [refreshInterval]);
 
-  // RENDER CUSTOM AD
-  if (displayMode === 'CUSTOM' || (showFallback && !isAdFilled)) {
-    if (selectedCustomAd) {
-      return (
-        <div className={`w-full my-4 animate-fadeIn ${className}`}>
-          <div className="flex items-center justify-between px-1 mb-1.5 text-[10px] uppercase font-bold tracking-widest text-slate-400 select-none">
-            <span className="flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-rba-yellow" />
-              {label} • {selectedCustomAd.badge_text || 'Sponsored'}
-            </span>
-            <span className="text-[9px] font-medium text-slate-400">Official Partner</span>
-          </div>
+  // RENDER CUSTOM AD (Only when displayMode is CUSTOM and a custom ad exists)
+  if (displayMode === 'CUSTOM' && selectedCustomAd) {
+    return (
+      <div className={`w-full my-4 animate-fadeIn ${className}`}>
+        <div className="flex items-center justify-between px-1 mb-1.5 text-[10px] uppercase font-bold tracking-widest text-slate-400 select-none">
+          <span className="flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-rba-yellow" />
+            {label} • {selectedCustomAd.badge_text || 'Sponsored'}
+          </span>
+          <span className="text-[9px] font-medium text-slate-400">Official Partner</span>
+        </div>
 
-          <div className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r ${selectedCustomAd.bg_gradient || 'from-blue-900 via-indigo-900 to-slate-900'} text-white shadow-md border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 overflow-hidden relative`}>
-            
-            {/* Background image if present */}
-            {selectedCustomAd.banner_url && selectedCustomAd.media_type === 'IMAGE' && (
-              <div className="absolute inset-0 opacity-20 pointer-events-none bg-cover bg-center" style={{ backgroundImage: `url(${selectedCustomAd.banner_url})` }} />
-            )}
+        <div className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r ${selectedCustomAd.bg_gradient || 'from-blue-900 via-indigo-900 to-slate-900'} text-white shadow-md border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 overflow-hidden relative`}>
+          
+          {/* Background image if present */}
+          {selectedCustomAd.banner_url && selectedCustomAd.media_type === 'IMAGE' && (
+            <div className="absolute inset-0 opacity-20 pointer-events-none bg-cover bg-center" style={{ backgroundImage: `url(${selectedCustomAd.banner_url})` }} />
+          )}
 
-            <div className="flex items-center gap-3.5 min-w-0 z-10">
-              <div
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shadow-md shrink-0 text-white font-black text-lg"
-                style={{ backgroundColor: selectedCustomAd.accent_color || '#0284c7' }}
-              >
-                <Megaphone className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h4 className="text-sm sm:text-base font-black text-white tracking-tight truncate">
-                    {selectedCustomAd.sponsor_name}
-                  </h4>
-                  <span className="px-2 py-0.2 rounded text-[9px] font-bold bg-white/20 text-white uppercase tracking-wider">
-                    {selectedCustomAd.category || 'Sponsor'}
-                  </span>
-                </div>
-                <p className="text-xs sm:text-sm font-bold text-amber-200 line-clamp-1">
-                  {selectedCustomAd.title}
-                </p>
-                {selectedCustomAd.tagline && (
-                  <p className="text-[11px] sm:text-xs text-slate-200 line-clamp-1 hidden xs:block">
-                    {selectedCustomAd.tagline}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <a
-              href={selectedCustomAd.cta_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => trackClick(selectedCustomAd.id)}
-              className="z-10 self-start sm:self-center inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-xs text-slate-950 shadow-md transition-transform hover:scale-105 active:scale-95 shrink-0"
+          <div className="flex items-center gap-3.5 min-w-0 z-10">
+            <div
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shadow-md shrink-0 text-white font-black text-lg"
               style={{ backgroundColor: selectedCustomAd.accent_color || '#0284c7' }}
             >
-              <span>{selectedCustomAd.cta_text || 'Learn More'}</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+              <Megaphone className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm sm:text-base font-black text-white tracking-tight truncate">
+                  {selectedCustomAd.sponsor_name}
+                </h4>
+                <span className="px-2 py-0.2 rounded text-[9px] font-bold bg-white/20 text-white uppercase tracking-wider">
+                  {selectedCustomAd.category || 'Sponsor'}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm font-bold text-amber-200 line-clamp-1">
+                {selectedCustomAd.title}
+              </p>
+              {selectedCustomAd.tagline && (
+                <p className="text-[11px] sm:text-xs text-slate-200 line-clamp-1 hidden xs:block">
+                  {selectedCustomAd.tagline}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      );
-    }
 
-    // No custom ads configured yet -> Render "Advertise Here" WhatsApp Card!
-    return <AdvertiseHereCard className={className} variant={format === 'rectangle' ? 'modal' : 'banner'} />;
+          <a
+            href={selectedCustomAd.cta_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackClick(selectedCustomAd.id)}
+            className="z-10 self-start sm:self-center inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-xs text-slate-950 shadow-md transition-transform hover:scale-105 active:scale-95 shrink-0"
+            style={{ backgroundColor: selectedCustomAd.accent_color || '#0284c7' }}
+          >
+            <span>{selectedCustomAd.cta_text || 'Learn More'}</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      </div>
+    );
   }
 
   // RENDER GOOGLE ADSENSE
