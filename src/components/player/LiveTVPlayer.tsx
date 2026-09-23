@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { Station } from '../../types';
 import { usePlayer } from '../../context/PlayerContext';
+import { useAds } from '../../context/AdContext';
+import { AdPopupModal } from '../ads/AdPopupModal';
 import { trackEvent } from '../../services/api';
 
 interface LiveTVPlayerProps {
@@ -39,6 +41,8 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
     setTvMuted,
     currentStation,
   } = usePlayer();
+
+  const { isPopupOpen, closePopup } = useAds();
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -693,6 +697,13 @@ export const LiveTVPlayer: React.FC<LiveTVPlayerProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Ad Modal rendered inside player element to support Fullscreen TV broadcast mode */}
+      {isPopupOpen && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-auto">
+          <AdPopupModal isOpen={isPopupOpen} onClose={closePopup} />
+        </div>
+      )}
     </div>
     </div>
   );

@@ -83,9 +83,11 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
     }
   }, [adKey, forceDisplayMode]);
 
-  // Push to adsbygoogle on mount when in GOOGLE mode
+  // Push to adsbygoogle on mount when in GOOGLE mode and container is visible with width > 0
   useEffect(() => {
     if (displayMode !== 'GOOGLE') return;
+    const insElement = insRef.current;
+    if (!insElement) return;
 
     if (slot && !validSlot) {
       console.warn(
@@ -94,37 +96,62 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
       );
     }
 
-    console.log(
-      `[Google AdSense] Requesting ad for Publisher "${ADS_CONFIG.CLIENT_ID}" ` +
-      (validSlot ? `(Slot: "${validSlot}", Format: ${format})` : `(Auto-Ad mode without fixed slot, Format: ${format})`)
-    );
+    // Check if this ins element has already been processed by Google AdSense
+    const isDone =
+      insElement.getAttribute('data-adsbygoogle-status') === 'done' ||
+      insElement.getAttribute('data-ad-status') === 'filled' ||
+      insElement.getAttribute('data-ad-status') === 'unfilled';
 
-    if (typeof window === 'undefined') return;
-
-    if (!window.adsbygoogle) {
-      console.warn(
-        `[Google AdSense WARN] window.adsbygoogle is undefined! The script may be blocked by an AdBlocker, Brave Shields, network filter, or is still downloading.`
-      );
+    if (isDone) {
+      return;
     }
 
-    let timer: any = null;
-    try {
-      timer = setTimeout(() => {
-        try {
-          if (typeof window !== 'undefined') {
-            (window.adsbygoogle = window.adsbygoogle || []).push({});
-            console.log(`[Google AdSense] Successfully pushed ({}) to window.adsbygoogle queue.`);
-          }
-        } catch (err: any) {
-          console.error(`[Google AdSense ERROR] Failed to push to adsbygoogle queue:`, err?.message || err);
+    let isPushed = false;
+
+    const attemptPush = () => {
+      if (isPushed) return;
+      if (!insRef.current) return;
+
+      const currentIns = insRef.current;
+      const status = currentIns.getAttribute('data-adsbygoogle-status');
+      if (status === 'done') return;
+
+      const width = currentIns.offsetWidth || currentIns.getBoundingClientRect().width;
+      if (width <= 0) {
+        // Container has not rendered width yet (e.g. inside modal transition or width=0)
+        return;
+      }
+
+      try {
+        if (typeof window !== 'undefined') {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+          isPushed = true;
+          console.log(
+            `[Google AdSense] Successfully pushed ({}) to window.adsbygoogle queue (Width: ${Math.round(width)}px, Client: ${ADS_CONFIG.CLIENT_ID}).`
+          );
         }
-      }, 150);
-    } catch (e: any) {
-      console.error(`[Google AdSense ERROR] Unexpected error during timeout init:`, e);
+      } catch (err: any) {
+        console.error(`[Google AdSense ERROR] Failed to push to adsbygoogle queue:`, err?.message || err);
+      }
+    };
+
+    attemptPush();
+
+    const timer1 = setTimeout(attemptPush, 200);
+    const timer2 = setTimeout(attemptPush, 600);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && insElement) {
+      resizeObserver = new ResizeObserver(() => {
+        attemptPush();
+      });
+      resizeObserver.observe(insElement);
     }
 
     return () => {
-      if (timer) clearTimeout(timer);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      if (resizeObserver) resizeObserver.disconnect();
     };
   }, [adKey, displayMode, slot, validSlot, format]);
 
